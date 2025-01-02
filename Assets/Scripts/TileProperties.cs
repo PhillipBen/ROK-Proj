@@ -3,15 +3,25 @@ using UnityEngine;
 public class TileProperties : MonoBehaviour
 {
     //##### Beg of Variables #####
+
+    //### Beg of Manager Variables ###
+    public GameManager GM;
+    private CameraMovement CM;
+    private UIManager UIM;
+    //### End of Manager Variables ###
     public Vector2 tileCoords;
     private GameObject tileImageGO;
     public Sprite thickTile;
     public Sprite thinTile;
+    public int playerID;
     //##### End of Variables #####
 
 
     //##### Beg of Main Functions #####
     void Start() {
+        CM = GM.mainCamera.GetComponent<CameraMovement>();
+        UIM = GM.GetComponent<UIManager>();
+
         tileImageGO = this.transform.GetChild(0).gameObject;
     }
 
@@ -24,6 +34,10 @@ public class TileProperties : MonoBehaviour
         }else if (ID == 2) {
             tileImageGO.GetComponent<SpriteRenderer>().sprite = null;
         }
+    }
+
+    public void TileSelected() {
+        UIM.ToggleCitySelected(playerID);
     }
     //##### End of Main Functions #####
 

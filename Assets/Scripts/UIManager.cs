@@ -5,17 +5,31 @@ public class UIManager : MonoBehaviour
 {
     //##### Beg of Variables #####
     public GameManager GM;
+    private MapManager MM;
     private KingdomMap KM;
+    private InputManager IM;
+
+    public bool tileSelectedTF;
 
     //Position Search UI
     public GameObject PositionSearchObject;
     public GameObject CurrentPositionObject;
+
+    //Player Selected UI
+    public GameObject playerBaseSelectedObject;
     //##### End of Variables #####
 
 
     //##### Beg of Main Functions #####
     private void Start() {
+        //Manager Lists
+        MM = GM.GetComponent<MapManager>();
         KM = GM.GetComponent<KingdomMap>();
+        IM = GM.GetComponent<InputManager>();
+
+        //UI Start Mode
+        tileSelectedTF = false;
+        playerBaseSelectedObject.SetActive(false);
     }
 
 
@@ -47,7 +61,44 @@ public class UIManager : MonoBehaviour
     }
 
     public void ToggleKingdomZooming() {
-        KM.ToggleKingdomZooming();
+        MM.ToggleMapZooming();
+    }
+
+    public void ToggleTileSelected() {
+        tileSelectedTF = !tileSelectedTF;
+    }
+
+    public bool ClickGUILocation(GameObject GO) {
+        //True = Inside GUI, False = Outside GUI
+        RectTransform rt = GO.transform.GetComponent<RectTransform>();
+        Vector2 localMousePosition = rt.InverseTransformPoint(Input.mousePosition);
+        if (rt.rect.Contains(localMousePosition))
+            return true;
+        else
+            return false;
+    }
+
+    public void ToggleCitySelected(int playerID) {
+        //TODO: playerID will later be used to generate the specific data of the player.
+
+        if(!tileSelectedTF) {
+            ToggleTileSelected();
+        }else {
+        if(!ClickGUILocation(playerBaseSelectedObject))
+            ToggleTileSelected();
+        }
+
+        //Generate GUI
+        if(tileSelectedTF) {
+            playerBaseSelectedObject.transform.GetChild(2).GetComponent<TMP_Text>().text = "User ID: " + playerID;
+            playerBaseSelectedObject.SetActive(true);
+        }else {
+            playerBaseSelectedObject.SetActive(false);
+        }
+    }
+
+    public void EnterPlayerMapGUI() {
+        playerBaseSelectedObject.SetActive(false);
     }
 
     //##### End of Button Clicked Events #####

@@ -11,7 +11,8 @@ public class CameraMovement : MonoBehaviour
     private bool MouseDownTF;
     public Vector3 lastFullTileUpdate;
     public GameManager GM;
-    private KingdomMap KingdomMap;
+    public MapManager MM;
+    private KingdomMap KM;
     private bool cellFix = false;
     private float startMoveTime;
 
@@ -23,8 +24,9 @@ public class CameraMovement : MonoBehaviour
     {
         MouseDownTF = false;
         lastFullTileUpdate = this.transform.position;
-        this.GM = GM.GetComponent<GameManager>();
-        this.KingdomMap = GM.GetComponent<KingdomMap>();
+        GM = GM.GetComponent<GameManager>();
+        MM = GM.GetComponent<MapManager>();
+        KM = GM.GetComponent<KingdomMap>();
         startMoveTime = Time.time;
     }
 
@@ -84,7 +86,7 @@ public class CameraMovement : MonoBehaviour
 
     //##### Beg of Getters/Setters #####
     private void CheckDistanceTraveled() {
-        if(this.KingdomMap.getMapZoomingID() == 2) { //If in Kingdom map mode
+        if(MM.getMapZoomingID() == 1) { //If in Kingdom map mode
             var thisPos = this.transform.position;
             var xMoved = thisPos.x - lastFullTileUpdate.x >= 1 || thisPos.x - lastFullTileUpdate.x <= -1 ? true : false;
             var yMoved = thisPos.y - lastFullTileUpdate.y >= 1 || thisPos.y - lastFullTileUpdate.y <= -1 ? true : false;
@@ -98,7 +100,7 @@ public class CameraMovement : MonoBehaviour
             }
             if(xMoved || yMoved) {
                 lastFullTileUpdate += new Vector3(xMovePosNeg, yMovePosNeg, 0f);
-                this.KingdomMap.CameraMovedGridUpdate(xMoved, yMoved, xMovePosNeg, yMovePosNeg);
+                KM.CameraMovedGridUpdate(xMoved, yMoved, xMovePosNeg, yMovePosNeg);
             }
 
             //Fixes a bug where tiles move out of position during camera movement.
@@ -106,7 +108,7 @@ public class CameraMovement : MonoBehaviour
                 startMoveTime = Time.time;
                 cellFix = true;
             }else if(Time.time - startMoveTime >= 1 && cellFix){
-                this.KingdomMap.CameraMovedGridFix(lastFullTileUpdate);
+                KM.CameraMovedGridFix(lastFullTileUpdate);
                 cellFix = false;
             }
         }

@@ -27,8 +27,12 @@ public class NewMonoBehaviourScript : MonoBehaviour
     -Added Tile clicking, where the gameobject is selected when the tile is selected. The properties of the user's base still needs to be added to the tile so the selection can have any effect.
     -Added Tile GUI, 3 types: Thick Black, light thin, invisible. Note that this still needs to be added to user settings. Call via TileProperties.UpdateTileSpriteType(ID);
 
-    TODO:
+    1.0.3:
+    -Tile selection properly moves to player base based on selected player ID.
+    -Make player base building tiles + wall.
+    -Make the building tiles selectable.
 
+    TODO:
 
 
 

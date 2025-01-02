@@ -8,10 +8,9 @@ public class KingdomMap : MonoBehaviour
     public GameManager GM;
     private CameraMovement CM;
     private UIManager UIM;
+    private MapManager MM;
     //### End of Manager Variables ###
 
-    //0 = Kingdom List, 1 = Kingdom, 2 = Home
-    public int mapZoomingID;
     public int width;
     public int height;
     public int maxWidth; //Kingdom Tile Grid
@@ -38,6 +37,7 @@ public class KingdomMap : MonoBehaviour
     {
         CM = GM.mainCamera.GetComponent<CameraMovement>();
         UIM = GM.GetComponent<UIManager>();
+        MM = GM.GetComponent<MapManager>();
 
         CH = 0;
         CL = 0;
@@ -49,9 +49,9 @@ public class KingdomMap : MonoBehaviour
     }
 
     void Update() {
-        if(mapZoomingID == 2 && tileFolder.activeSelf == false) {
+        if(MM.mapZoomingID == 1 && tileFolder.activeSelf == false) {
             tileFolder.SetActive(true);
-        }else if(mapZoomingID != 2) {
+        }else if(MM.mapZoomingID != 1) {
             tileFolder.SetActive(false);
         }
     }
@@ -184,14 +184,6 @@ public class KingdomMap : MonoBehaviour
         UIM.SetCurrentPositionObject((int)(cameraGridCumulativeOffset.x), (int)(cameraGridCumulativeOffset.y));
     }
 
-    public void ToggleKingdomZooming() {
-            if(mapZoomingID == 2) {
-                mapZoomingID = 3;
-            }else {
-                mapZoomingID = 2;
-            }
-        }
-
     public void MoveToPos(int x, int y) {
         var tempPos = new Vector3(x, y, 0f);
         CM.MoveCamera((int)tempPos.x, (int)tempPos.y);
@@ -202,6 +194,7 @@ public class KingdomMap : MonoBehaviour
         if(tileClickCoords.x <= maxWidth && tileClickCoords.x >= minWidth && tileClickCoords.y <= maxHeight && tileClickCoords.y >= minHeight) {
             //Debug.Log("Selected: " + Mathf.Ceil(tileClickCoords.x + cameraGridOffset.x - cameraGridCumulativeOffset.x) + " " + Mathf.Ceil(tileClickCoords.y + cameraGridOffset.y - cameraGridCumulativeOffset.y));
             selectedTile = TileArray[(int)Mathf.Ceil(tileClickCoords.x + cameraGridOffset.x - cameraGridCumulativeOffset.x), (int)Mathf.Ceil(tileClickCoords.y + cameraGridOffset.y - cameraGridCumulativeOffset.y)];
+            selectedTile.GetComponent<TileProperties>().TileSelected();
         }//Else: Out of Range!
     }
 
@@ -215,11 +208,5 @@ public class KingdomMap : MonoBehaviour
 
 
     //##### Beg of Getters/Setters #####
-    public void setMapZoomingID(int mapZoomingID) {
-        this.mapZoomingID = mapZoomingID;
-    }
-    public int getMapZoomingID() {
-        return this.mapZoomingID;
-    }
     //##### End of Getters/Setters #####
 }

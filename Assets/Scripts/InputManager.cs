@@ -11,7 +11,9 @@ public class InputManager : MonoBehaviour
 
     //##### Beg of Variables #####
     public GameManager GM;
+    private MapManager MM;
     private KingdomMap KM;
+    private PlayerMap PM;
     //##### End of Variables #####
 
 
@@ -19,15 +21,27 @@ public class InputManager : MonoBehaviour
 
     void Start() {
         KM = GM.GetComponent<KingdomMap>();
+        MM = GM.GetComponent<MapManager>();
+        PM = GM.GetComponent<PlayerMap>();
     }
 
     void Update() {
         if(Input.GetMouseButtonDown(0)) {
-            KM.GridTileClicked(GetMouseWorldPosition());
+            if(MM.mapZoomingID == 1) {
+                KM.GridTileClicked(GetMouseWorldPosition());
+            }else if(MM.mapZoomingID == 2) {
+                PM.TileClicked(GetMouseWorldPosition());
+            }
+            
         }
     }
-
-    //Get Mouse Position in world with Z = 0f (2d)
+    
+    public static Vector3 GetMouseWorldPosition2D()
+    {
+        Vector3 vec3 = GetMouseWorldPositionWithZ(Input.mousePosition, Camera.main);
+        Vector2 vec = new Vector2(vec3.x, vec3.y);
+        return vec;
+    }
     public static Vector3 GetMouseWorldPosition()
     {
         Vector3 vec = GetMouseWorldPositionWithZ(Input.mousePosition, Camera.main);
