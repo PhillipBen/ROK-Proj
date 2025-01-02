@@ -4,27 +4,30 @@ public class KingdomMap : MonoBehaviour
 {
     //##### Beg of Variables #####
 
+    //### Beg of Manager Variables ###
+    public GameManager GM;
+    private CameraMovement CM;
+    private UIManager UIM;
+    //### End of Manager Variables ###
+
     //0 = Kingdom List, 1 = Kingdom, 2 = Home
     public int mapZoomingID;
     public int width;
     public int height;
-    public int maxWidth;
-    public int maxHeight;
-    public int minWidth;
-    public int minHeight;
+    public int maxWidth; //Kingdom Tile Grid
+    public int maxHeight; //Kingdom Tile Grid
+    public int minWidth; //Kingdom Tile Grid
+    public int minHeight; //Kingdom Tile Grid
     private int CL; //Current Length (So far)
     private int CH; //Current Height (So far)
-    public float cellSize;
+    public float cellSize; //Tile size to pixels
     private Vector3 originPosition; //Not set up to use negative numbers
     public GameObject tilePreset;
     public GameObject tileFolder;
     public GameObject[,] TileArray;
-    public GameObject camera;
+    private GameObject mainCamera;
     private Vector3 cameraGridOffset = new Vector3(15.5f, 8.5f, -10);
     private Vector3 cameraGridCumulativeOffset;
-    public GameManager GM;
-    private CameraMovement CM;
-    private UIManager UIM;
     private GameObject selectedTile;
     //##### End of Variables #####
 
@@ -38,7 +41,8 @@ public class KingdomMap : MonoBehaviour
 
         CH = 0;
         CL = 0;
-        originPosition = camera.transform.position - cameraGridOffset;
+        mainCamera = GM.mainCamera;
+        originPosition = mainCamera.transform.position - cameraGridOffset;
         CreateGrid(width, height, cellSize); //Creating the grid
 
         selectedTile = null;
@@ -61,21 +65,7 @@ public class KingdomMap : MonoBehaviour
 
         for (int i = 0; i < width * height; i++)
         {
-            
-            GameObject newTile = (GameObject)Instantiate(tilePreset.transform.GetChild(0).gameObject);
-            newTile.SetActive(true);
-            newTile.transform.SetParent(tileFolder.gameObject.transform);
-            TileArray[CL, CH] = newTile;
-            newTile.GetComponent<TileProperties>().tileCoords = new Vector2(CL, CH);
-            var x = (CL * (cellSize / 100));
-            var y = (CH * (cellSize / 100));
-
-            if(CheckInBounds(x + originPosition.x, y + originPosition.y)) {
-                newTile.transform.position = new Vector3(x, y, 0) + originPosition;
-                newTile.transform.localScale = new Vector3(0.2f, 0.2f, 1);
-            }else {
-                newTile.SetActive(false);
-            }
+            InstantiateGridTile(CL, CH, originPosition.x, originPosition.y);
 
             if (CL == width - 1)
             {
@@ -100,23 +90,9 @@ public class KingdomMap : MonoBehaviour
         }
         CH = 0;
         CL = 0;
-        for(int i = 0; i < width * height; i++) {
-            
-            GameObject newTile = (GameObject)Instantiate(tilePreset.transform.GetChild(0).gameObject);
-            newTile.SetActive(true);
-            newTile.transform.SetParent(tileFolder.gameObject.transform);
-            TileArray[CL, CH] = newTile;
-            newTile.GetComponent<TileProperties>().tileCoords = new Vector2(CL, CH);
-            var x = (CL * (cellSize / 100));
-            var y = (CH * (cellSize / 100));
-
-            if(CheckInBounds(x + originPosition.x + posChange.x, y + originPosition.y + posChange.y)) {
-                newTile.transform.position = new Vector3(x, y, 0) + originPosition + posChange;
-                newTile.transform.position = new Vector3(newTile.transform.position.x, newTile.transform.position.y, 0);
-                newTile.transform.localScale = new Vector3(0.2f, 0.2f, 1);
-            }else {
-                newTile.SetActive(false);
-            }
+        for(int i = 0; i < width * height; i++) 
+        {
+            InstantiateGridTile(CL, CH, originPosition.x + posChange.x, originPosition.y + posChange.y);
 
             if (CL == width - 1)
             {
@@ -131,19 +107,18 @@ public class KingdomMap : MonoBehaviour
 
         UIM.SetCurrentPositionObject((int)(cameraGridCumulativeOffset.x), (int)(cameraGridCumulativeOffset.y));
     }
-    
-    private void CreateReplacementTile(int xPos, int yPos, int xMovePosNeg, int yMovePosNeg) {
-        
+
+    private void InstantiateGridTile(int xPos, int yPos, float realWorldXPos, float realWorldYPos) {
         GameObject newTile = (GameObject)Instantiate(tilePreset.transform.GetChild(0).gameObject);
         newTile.transform.SetParent(tileFolder.gameObject.transform);
         TileArray[xPos, yPos] = newTile;
         newTile.GetComponent<TileProperties>().tileCoords = new Vector2(xPos, yPos);
-        var x = (xPos * (cellSize / 100));
-        var y = (yPos * (cellSize / 100));
+        var x = (xPos * (cellSize / 100)) + realWorldXPos;
+        var y = (yPos * (cellSize / 100)) + realWorldYPos;
 
-        if(CheckInBounds(x + originPosition.x + cameraGridCumulativeOffset.x, y + originPosition.y + cameraGridCumulativeOffset.y)) {
+        if(CheckInBounds(x, y)) {
             newTile.SetActive(true);
-            newTile.transform.position = new Vector3(x, y, 0) + originPosition + cameraGridCumulativeOffset;
+            newTile.transform.position = new Vector3(x, y, 0f);
             newTile.transform.localScale = new Vector3(0.2f, 0.2f, 1);
         }else {
            newTile.SetActive(false); 
@@ -163,7 +138,7 @@ public class KingdomMap : MonoBehaviour
                     TileArray[x, y] = TileArray[x + 1, y];
                 }
 
-                CreateReplacementTile(width - 1, y, xMovePosNeg, 0);
+                InstantiateGridTile(width - 1, y, originPosition.x + cameraGridCumulativeOffset.x, originPosition.y + cameraGridCumulativeOffset.y);
             }
         }
         if(xMovePosNeg == -1) {
@@ -176,7 +151,7 @@ public class KingdomMap : MonoBehaviour
                     TileArray[x, y] = TileArray[x - 1, y];
                 }
 
-                CreateReplacementTile(0, y, xMovePosNeg, 0);
+                InstantiateGridTile(0, y, originPosition.x + cameraGridCumulativeOffset.x, originPosition.y + cameraGridCumulativeOffset.y);
             }
         }
         if(yMovePosNeg == 1) {
@@ -189,7 +164,7 @@ public class KingdomMap : MonoBehaviour
                     TileArray[x, y] = TileArray[x, y + 1];
                 }
 
-                CreateReplacementTile(x, height - 1, 0, yMovePosNeg);
+                InstantiateGridTile(x, height - 1, originPosition.x + cameraGridCumulativeOffset.x, originPosition.y + cameraGridCumulativeOffset.y);
             }
         }
         if(yMovePosNeg == -1) {
@@ -202,7 +177,7 @@ public class KingdomMap : MonoBehaviour
                     TileArray[x, y] = TileArray[x, y - 1];
                 }
 
-                CreateReplacementTile(x, 0, 0, yMovePosNeg);
+                InstantiateGridTile(x, 0, originPosition.x + cameraGridCumulativeOffset.x, originPosition.y + cameraGridCumulativeOffset.y);
             }
         } 
 
@@ -218,14 +193,14 @@ public class KingdomMap : MonoBehaviour
         }
 
     public void MoveToPos(int x, int y) {
-        var tempPos = new Vector3(x, y, 0f);// + cameraGridOffset;
+        var tempPos = new Vector3(x, y, 0f);
         CM.MoveCamera((int)tempPos.x, (int)tempPos.y);
     }
 
     public void GridTileClicked(Vector3 clickPos) {
         var tileClickCoords = new Vector2(Mathf.Floor(clickPos.x), Mathf.Floor(clickPos.y));
         if(tileClickCoords.x <= maxWidth && tileClickCoords.x >= minWidth && tileClickCoords.y <= maxHeight && tileClickCoords.y >= minHeight) {
-            Debug.Log("Selected: " + Mathf.Ceil(tileClickCoords.x + cameraGridOffset.x - cameraGridCumulativeOffset.x) + " " + Mathf.Ceil(tileClickCoords.y + cameraGridOffset.y - cameraGridCumulativeOffset.y));
+            //Debug.Log("Selected: " + Mathf.Ceil(tileClickCoords.x + cameraGridOffset.x - cameraGridCumulativeOffset.x) + " " + Mathf.Ceil(tileClickCoords.y + cameraGridOffset.y - cameraGridCumulativeOffset.y));
             selectedTile = TileArray[(int)Mathf.Ceil(tileClickCoords.x + cameraGridOffset.x - cameraGridCumulativeOffset.x), (int)Mathf.Ceil(tileClickCoords.y + cameraGridOffset.y - cameraGridCumulativeOffset.y)];
         }//Else: Out of Range!
     }

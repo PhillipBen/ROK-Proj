@@ -4,9 +4,6 @@ public class NewMonoBehaviourScript : MonoBehaviour
 {
     /*
     Today Finish:
-    -Shorten Instanciations in KingdomMap to function
-    -Check that other code is clean and shortened
-    -Add Tile GUI.
     -Fix Camera warning.
 
     --Finishes out 1.0.2!
@@ -28,9 +25,12 @@ public class NewMonoBehaviourScript : MonoBehaviour
     -Added Coordinate search function.
     -Added Circular Toggle Button to go from player to Kingdom and back home (your home).
     -Added Tile clicking, where the gameobject is selected when the tile is selected. The properties of the user's base still needs to be added to the tile so the selection can have any effect.
+    -Added Tile GUI, 3 types: Thick Black, light thin, invisible. Note that this still needs to be added to user settings. Call via TileProperties.UpdateTileSpriteType(ID);
 
     TODO:
-    -Tile GUI, 3 types: Thick Black, light thin, invisible.
+
+
+
 
     Bugs:
     -When moving screen in Kingdom map mode, some tiles are offput by 1 y coordinate. It only has problems with the top and bottom y tiles, never the left or right x tiles. Why this happens, idk. Fixed with a '1 second of no movement' all tile refresh.

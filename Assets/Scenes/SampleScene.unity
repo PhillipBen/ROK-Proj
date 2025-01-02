@@ -1931,6 +1931,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71c3268cd74fc724a82f775f3bf9ed20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  GM: {fileID: 1082219395}
   mapZoomingID: 2
   width: 32
   height: 18
@@ -1941,8 +1942,6 @@ MonoBehaviour:
   cellSize: 100
   tilePreset: {fileID: 326917942}
   tileFolder: {fileID: 826757934}
-  camera: {fileID: 519420028}
-  GM: {fileID: 1082219395}
 --- !u!114 &1082219394
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2937,6 +2936,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tileCoords: {x: 0, y: 0}
+  thickTile: {fileID: 7482667652216324306, guid: a1614e839f912b44db9951c9c1876eeb, type: 3}
+  thinTile: {fileID: -2976127548578695471, guid: bf18c4bb73bdead4495710cdbaebd10f, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

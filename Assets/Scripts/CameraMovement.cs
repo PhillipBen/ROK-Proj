@@ -101,6 +101,7 @@ public class CameraMovement : MonoBehaviour
                 this.KingdomMap.CameraMovedGridUpdate(xMoved, yMoved, xMovePosNeg, yMovePosNeg);
             }
 
+            //Fixes a bug where tiles move out of position during camera movement.
             if((xMoved || yMoved) && cellFix == false ) {
                 startMoveTime = Time.time;
                 cellFix = true;
