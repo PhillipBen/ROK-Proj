@@ -7,9 +7,14 @@ public class UIManager : MonoBehaviour
     public GameManager GM;
     private MapManager MM;
     private KingdomMap KM;
+    private PlayerMap PM;
     private InputManager IM;
+    private UniverseMap UM;
 
+    //World GUI
     public bool tileSelectedTF;
+    public GameObject MapZoomingObject;
+    public GameObject UniverseZoomingObject;
 
     //Position Search UI
     public GameObject PositionSearchObject;
@@ -17,6 +22,9 @@ public class UIManager : MonoBehaviour
 
     //Player Selected UI
     public GameObject playerBaseSelectedObject;
+
+    //Universe UI
+    public GameObject universeListObject;
     //##### End of Variables #####
 
 
@@ -26,12 +34,51 @@ public class UIManager : MonoBehaviour
         MM = GM.GetComponent<MapManager>();
         KM = GM.GetComponent<KingdomMap>();
         IM = GM.GetComponent<InputManager>();
+        PM = GM.GetComponent<PlayerMap>();
+        UM = GM.GetComponent<UniverseMap>();
 
         //UI Start Mode
         tileSelectedTF = false;
         playerBaseSelectedObject.SetActive(false);
+        UpdateMapGUI();
     }
 
+    public void UpdateMapGUI() {
+        //0 = Kingdom List, 1 = Kingdom, 2 = Home
+        if(MM.mapZoomingID == 2) {
+            MapZoomingObject.SetActive(true);
+            UniverseZoomingObject.SetActive(false);
+            playerBaseSelectedObject.SetActive(false);
+            PM.ShowTiles();
+            KM.HideTiles();
+            universeListObject.SetActive(false);
+            PositionSearchObject.SetActive(false);
+            CurrentPositionObject.SetActive(false);
+        }else if(MM.mapZoomingID == 1) {
+            MapZoomingObject.SetActive(true);
+            UniverseZoomingObject.SetActive(true);
+            PM.HideTiles();
+            KM.ShowTiles();
+            universeListObject.SetActive(false);
+            PositionSearchObject.SetActive(true);
+            CurrentPositionObject.SetActive(true);
+        }else if(MM.mapZoomingID == 0) {
+            MapZoomingObject.SetActive(false);
+            UniverseZoomingObject.SetActive(true);
+            playerBaseSelectedObject.SetActive(false);
+            PM.HideTiles();
+            KM.HideTiles();
+            UM.ViewingUniverseMapMode(); //functionality
+            universeListObject.SetActive(true);
+            PositionSearchObject.SetActive(false);
+            CurrentPositionObject.SetActive(false);
+        }
+    }
+
+    public void SortKingdomList(int ID) {
+        //0 = Beginner Kingdoms, 1 = KVK Kingdoms
+        UM.SortKingdomList(ID);
+    }
 
     //##### End of Main Functions #####
 
@@ -62,6 +109,10 @@ public class UIManager : MonoBehaviour
 
     public void ToggleKingdomZooming() {
         MM.ToggleMapZooming();
+    }
+
+    public void ToggleUniverseZooming() {
+        MM.ToggleUniverseMapZooming();
     }
 
     public void ToggleTileSelected() {
@@ -95,10 +146,6 @@ public class UIManager : MonoBehaviour
         }else {
             playerBaseSelectedObject.SetActive(false);
         }
-    }
-
-    public void EnterPlayerMapGUI() {
-        playerBaseSelectedObject.SetActive(false);
     }
 
     //##### End of Button Clicked Events #####

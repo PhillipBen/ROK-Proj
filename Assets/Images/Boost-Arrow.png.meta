@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: bf18c4bb73bdead4495710cdbaebd10f
+guid: 402bc47efca5778478524cf5c73891b7
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2976127548578695471
-    second: Thin Square_0
+      213: -2547326828272707876
+    second: Boost-Arrow_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Thin Square_0
+      name: Boost-Arrow_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 500
-        height: 500
+        x: 107
+        y: 130
+        width: 382
+        height: 266
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1d676b443cba2b6d0800000000000000
-      internalID: -2976127548578695471
+      spriteID: cd69bf9feb316acd0800000000000000
+      internalID: -2547326828272707876
       vertices: []
       indices: 
       edges: []
@@ -147,8 +147,7 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable:
-      Thin Square_0: -2976127548578695471
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

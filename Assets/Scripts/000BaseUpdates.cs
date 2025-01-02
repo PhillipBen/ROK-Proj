@@ -4,9 +4,10 @@ public class NewMonoBehaviourScript : MonoBehaviour
 {
     /*
     Today Finish:
-    -Fix Camera warning.
-
-    --Finishes out 1.0.2!
+    -Finish Player GUI
+    -Get Buildings clicked to have a blank popup.
+    -Get Data working (Look at classes).
+    
 
 
 
@@ -32,9 +33,18 @@ public class NewMonoBehaviourScript : MonoBehaviour
     -Make player base building tiles + wall.
     -Make the building tiles selectable.
 
+    1.0.4:
+    -NOTE: A kingdom has many players. A player has a User (formal login details) attribute, and an InGameProperties attribute.
+    -Universe GUI
+
     TODO:
+    -Player GUI
+    --Building Blank Popup GUI
 
 
+    Local TODO:
+    -Learn about data-class handling, and how to access them in multiple classes.
+    -Build and load the local DB and get it connected and running!
 
     Bugs:
     -When moving screen in Kingdom map mode, some tiles are offput by 1 y coordinate. It only has problems with the top and bottom y tiles, never the left or right x tiles. Why this happens, idk. Fixed with a '1 second of no movement' all tile refresh.

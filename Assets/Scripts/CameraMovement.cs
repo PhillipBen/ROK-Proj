@@ -86,7 +86,7 @@ public class CameraMovement : MonoBehaviour
 
     //##### Beg of Getters/Setters #####
     private void CheckDistanceTraveled() {
-        if(MM.getMapZoomingID() == 1) { //If in Kingdom map mode
+        if(MM.mapZoomingID == 1) { //If in Kingdom map mode
             var thisPos = this.transform.position;
             var xMoved = thisPos.x - lastFullTileUpdate.x >= 1 || thisPos.x - lastFullTileUpdate.x <= -1 ? true : false;
             var yMoved = thisPos.y - lastFullTileUpdate.y >= 1 || thisPos.y - lastFullTileUpdate.y <= -1 ? true : false;

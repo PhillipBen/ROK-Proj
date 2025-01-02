@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: bf18c4bb73bdead4495710cdbaebd10f
+guid: 3b0d5fdf492a0c24a899194a298af638
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2976127548578695471
-    second: Thin Square_0
+      213: -8187784718349437815
+    second: Ribbon Vertical_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Thin Square_0
+      name: Ribbon Vertical_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 18
         y: 0
-        width: 500
-        height: 500
+        width: 143
+        height: 245
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1d676b443cba2b6d0800000000000000
-      internalID: -2976127548578695471
+      spriteID: 984f86ded252f5e80800000000000000
+      internalID: -8187784718349437815
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Thin Square_0: -2976127548578695471
+      Ribbon Vertical_0: -8187784718349437815
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

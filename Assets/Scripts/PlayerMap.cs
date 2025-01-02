@@ -7,6 +7,7 @@ public class PlayerMap : MonoBehaviour
     public GameManager GM;
     private KingdomMap KM;
     public List<GameObject> buildingTileList = new List<GameObject>();
+    public GameObject playerBaseTilesFolder;
     //##### End of Variables #####
 
 
@@ -19,6 +20,14 @@ public class PlayerMap : MonoBehaviour
         for(int i = 0; i < buildingTileList.Count; i++) {
             buildingTileList[i].GetComponent<BuildingSlot>().IsTileClicked(clickPos);
         }
+    }
+
+    public void ShowTiles() {
+        playerBaseTilesFolder.SetActive(true);
+    }
+
+    public void HideTiles() {
+        playerBaseTilesFolder.SetActive(false);
     }
     //##### End of Main Functions #####
 

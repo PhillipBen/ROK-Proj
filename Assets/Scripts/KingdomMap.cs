@@ -48,12 +48,12 @@ public class KingdomMap : MonoBehaviour
         selectedTile = null;
     }
 
-    void Update() {
-        if(MM.mapZoomingID == 1 && tileFolder.activeSelf == false) {
-            tileFolder.SetActive(true);
-        }else if(MM.mapZoomingID != 1) {
-            tileFolder.SetActive(false);
-        }
+    public void ShowTiles() {
+        tileFolder.SetActive(true);
+    }
+
+    public void HideTiles() {
+        tileFolder.SetActive(false);
     }
 
     private void CreateGrid(int width, int height, float cellSize)
