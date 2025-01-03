@@ -6,6 +6,7 @@ public class PlayerMap : MonoBehaviour
     //##### Beg of Variables #####
     public GameManager GM;
     private KingdomMap KM;
+    private UIManager UIM;
     public List<GameObject> buildingTileList = new List<GameObject>();
     public GameObject playerBaseTilesFolder;
     //##### End of Variables #####
@@ -14,11 +15,17 @@ public class PlayerMap : MonoBehaviour
     //##### Beg of Main Functions #####
     void Start() {
         KM = GM.GetComponent<KingdomMap>();
+        UIM = GM.GetComponent<UIManager>();
     }
 
     public void TileClicked(Vector3 clickPos) {
+        var anyTileClickedTF = false;
         for(int i = 0; i < buildingTileList.Count; i++) {
-            buildingTileList[i].GetComponent<BuildingSlot>().IsTileClicked(clickPos);
+            if(buildingTileList[i].GetComponent<BuildingSlot>().IsTileClicked(clickPos))
+                anyTileClickedTF = true;
+        }
+        if(!anyTileClickedTF) {
+            UIM.ToggleBuildingOptionsObjSelected(clickPos, -1);
         }
     }
 

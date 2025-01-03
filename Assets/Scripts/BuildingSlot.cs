@@ -6,7 +6,8 @@ public class BuildingSlot : MonoBehaviour
     public GameManager GM;
     private UIManager UIM;
     public int cellSize;
-    public int buildingType; //0 = Regular Building, 1 = Wall, 2 = Non-buildable Building.
+    public int buildingGUIType; //0 = Regular Building, 1 = Wall, 2 = Non-buildable Building.
+    public int buildingType; //Barracks, City Hall, etc
     //##### End of Variables #####
 
 
@@ -16,16 +17,16 @@ public class BuildingSlot : MonoBehaviour
 
         cellSize /= 100;
     }
-    public void IsTileClicked(Vector3 clickPos) {
+    public bool IsTileClicked(Vector3 clickPos) {
         var selectedTF = false;
-        if(buildingType == 0) {
+        if(buildingGUIType == 0) {
             var coords = new Vector2(clickPos.x, clickPos.y);
             Vector3 pos = this.transform.position;
             if(pos.x - (cellSize / 2f) <= coords.x && pos.x + (cellSize / 2f) >= coords.x && pos.y - (cellSize / 2f) <= coords.y && pos.y + (cellSize / 2f) >= coords.y) {
                 //Selected
                 selectedTF = true;
             }
-        }else if (buildingType == 1) {
+        }else if (buildingGUIType == 1) {
             var coords = new Vector2(clickPos.x, clickPos.y);
             Vector3 pos = this.transform.position;
             Vector2 scale = new Vector2(this.transform.localScale.x, this.transform.localScale.y);
@@ -44,7 +45,10 @@ public class BuildingSlot : MonoBehaviour
             Vector2 thisPos = this.transform.position;
             Vector2 viewportPoint = Camera.main.WorldToViewportPoint(thisPos);
             viewportPoint = new Vector2(viewportPoint.x * Screen.width, (viewportPoint.y * Screen.height) - 280);
-            UIM.ShowBuildingOptions(viewportPoint);
+            UIM.ToggleBuildingOptionsObjSelected(viewportPoint, buildingType);
+            return true; //Return true or false based on if the tile was clicked.
+        }else {
+            return false;
         }
     }
     //##### End of Main Functions #####

@@ -4,24 +4,21 @@ using System.Collections.Generic;
 public class KingdomData : MonoBehaviour
 {
     //##### Beg of Variables #####
-    List<Kingdom> kingdomList = new List<Kingdom>();
+    public GameManager GM;
+    private DataManager DM;
     //##### End of Variables #####
 
 
     //##### Beg of Main Functions #####
-    public void LoadKingdoms(List<Kingdom> kingdomList) {
-        this.kingdomList = kingdomList;
-        for(int i = 0; i < this.kingdomList.Count; i++) {
-            Debug.Log("K: " + kingdomList[i]);
-        }
+    void Start() {
+        DM = GM.GetComponent<DataManager>();
     }
-
     //##### End of Main Functions #####
 
 
     //##### Beg of Getters/Setters #####
     public List<Kingdom> GetKingdomList() {
-        return kingdomList;
+        return DM.GetKingdomList();
     }
     //##### End of Getters/Setters #####
 }

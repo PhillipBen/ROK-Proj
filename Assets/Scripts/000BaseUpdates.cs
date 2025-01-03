@@ -41,9 +41,15 @@ public class NewMonoBehaviourScript : MonoBehaviour
     -Test data is being loaded via DataManager
 
     1.0.5:
-    -
+    -Player EXP was added and working.
+    --NOTE: When tile is clicked, PlayerEXP will need to be gotten from the Player class from that tile.
+    -Fixed clicking bugs with UI popups that appeared from certain actions.
+    -Added Resource button input and rounding so totals are properly rounded.
 
     TODO:
+
+
+
 
 
     Local TODO:
