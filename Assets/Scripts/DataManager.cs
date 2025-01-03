@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class DataManager : MonoBehaviour
 {
@@ -23,8 +24,14 @@ public class DataManager : MonoBehaviour
     }
 
     private void LoadKingdoms() {
-        //List<Kingdom> kingdomIDList = new List<Kingdom>() {};
-        //KD.LoadKingdoms();
+
+        //Holds the full list of all kingdoms.
+        User user = new User(0, "Test Man");
+        Player player = new Player(user);
+        Kingdom kingdom = new Kingdom(0, new List<Player>() {player, player});
+        List<Kingdom> kingdomList = new List<Kingdom>() {kingdom};
+
+        KD.LoadKingdoms(kingdomList);
     }
     //##### End of Data Loaders #####
 

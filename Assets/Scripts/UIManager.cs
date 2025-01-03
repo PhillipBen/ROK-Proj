@@ -11,20 +11,32 @@ public class UIManager : MonoBehaviour
     private InputManager IM;
     private UniverseMap UM;
 
+
+    //Universe UI
+    public GameObject universeListObject;
+
     //World GUI
     public bool tileSelectedTF;
     public GameObject MapZoomingObject;
     public GameObject UniverseZoomingObject;
-
-    //Position Search UI
     public GameObject PositionSearchObject;
     public GameObject CurrentPositionObject;
-
-    //Player Selected UI
     public GameObject playerBaseSelectedObject;
 
-    //Universe UI
-    public GameObject universeListObject;
+    //Player GUI
+    public GameObject playerGUIFolder;
+    public GameObject powerObj;
+    public GameObject VIPObj;
+    public GameObject woodObj;
+    public GameObject stoneObj;
+    public GameObject chatObj;
+    public GameObject tabBGObj;
+    public GameObject commanderObj;
+    public GameObject allianceObj;
+    public GameObject inventoryObj;
+    public bool tabOpenTF;
+    public GameObject buildingOptionsObj;
+
     //##### End of Variables #####
 
 
@@ -40,6 +52,9 @@ public class UIManager : MonoBehaviour
         //UI Start Mode
         tileSelectedTF = false;
         playerBaseSelectedObject.SetActive(false);
+        buildingOptionsObj.SetActive(false);
+        tabOpenTF = false;
+        TabGUIToggle();
         UpdateMapGUI();
     }
 
@@ -49,35 +64,104 @@ public class UIManager : MonoBehaviour
             MapZoomingObject.SetActive(true);
             UniverseZoomingObject.SetActive(false);
             playerBaseSelectedObject.SetActive(false);
+
             PM.ShowTiles();
             KM.HideTiles();
-            universeListObject.SetActive(false);
-            PositionSearchObject.SetActive(false);
-            CurrentPositionObject.SetActive(false);
+
+            HideUniverseGUI();
+            HideKingdomGUI();
+            ShowPlayerGUI();
+
         }else if(MM.mapZoomingID == 1) {
             MapZoomingObject.SetActive(true);
             UniverseZoomingObject.SetActive(true);
+            buildingOptionsObj.SetActive(false);
+
             PM.HideTiles();
             KM.ShowTiles();
-            universeListObject.SetActive(false);
-            PositionSearchObject.SetActive(true);
-            CurrentPositionObject.SetActive(true);
+
+            HideUniverseGUI();
+            ShowKingdomGUI();
+            ShowPlayerGUI();
         }else if(MM.mapZoomingID == 0) {
             MapZoomingObject.SetActive(false);
             UniverseZoomingObject.SetActive(true);
             playerBaseSelectedObject.SetActive(false);
+            buildingOptionsObj.SetActive(false);
+
             PM.HideTiles();
             KM.HideTiles();
+
             UM.ViewingUniverseMapMode(); //functionality
-            universeListObject.SetActive(true);
-            PositionSearchObject.SetActive(false);
-            CurrentPositionObject.SetActive(false);
+
+            ShowUniverseGUI();
+            HideKingdomGUI();
+            HidePlayerGUI();
         }
+    }
+
+    public void ShowUniverseGUI() {
+        universeListObject.SetActive(true);
+    }
+
+    public void HideUniverseGUI() {
+        universeListObject.SetActive(false);
+    }
+
+    public void ShowKingdomGUI() {
+        PositionSearchObject.SetActive(true);
+        CurrentPositionObject.SetActive(true);
+    }
+
+    public void HideKingdomGUI() {
+        PositionSearchObject.SetActive(false);
+        CurrentPositionObject.SetActive(false);
+    }
+
+    public void ShowPlayerGUI() {
+        playerGUIFolder.SetActive(true);
+    }
+
+    public void HidePlayerGUI() {
+        playerGUIFolder.SetActive(false);
     }
 
     public void SortKingdomList(int ID) {
         //0 = Beginner Kingdoms, 1 = KVK Kingdoms
         UM.SortKingdomList(ID);
+    }
+
+    public bool ClickGUILocation(GameObject GO) {
+        //True = Inside GUI, False = Outside GUI
+        RectTransform rt = GO.transform.GetComponent<RectTransform>();
+        Vector2 localMousePosition = rt.InverseTransformPoint(Input.mousePosition);
+        if (rt.rect.Contains(localMousePosition))
+            return true;
+        else
+            return false;
+    }
+
+    public void ToggleTabSelected() {
+        tabOpenTF = !tabOpenTF;
+    }
+
+    public void TabGUIToggle() {
+        if(tabOpenTF) {
+            tabBGObj.SetActive(true);
+            commanderObj.SetActive(true);
+            allianceObj.SetActive(true);
+            inventoryObj.SetActive(true);
+        }else {
+            tabBGObj.SetActive(false);
+            commanderObj.SetActive(false);
+            allianceObj.SetActive(false);
+            inventoryObj.SetActive(false);
+        }
+    }
+
+    public void ShowBuildingOptions(Vector2 newPos) {
+        buildingOptionsObj.SetActive(true);
+        buildingOptionsObj.transform.position = newPos;  
     }
 
     //##### End of Main Functions #####
@@ -119,16 +203,6 @@ public class UIManager : MonoBehaviour
         tileSelectedTF = !tileSelectedTF;
     }
 
-    public bool ClickGUILocation(GameObject GO) {
-        //True = Inside GUI, False = Outside GUI
-        RectTransform rt = GO.transform.GetComponent<RectTransform>();
-        Vector2 localMousePosition = rt.InverseTransformPoint(Input.mousePosition);
-        if (rt.rect.Contains(localMousePosition))
-            return true;
-        else
-            return false;
-    }
-
     public void ToggleCitySelected(int playerID) {
         //TODO: playerID will later be used to generate the specific data of the player.
 
@@ -146,6 +220,75 @@ public class UIManager : MonoBehaviour
         }else {
             playerBaseSelectedObject.SetActive(false);
         }
+    }
+
+    public void DailyTasksSelected() {
+        
+    }
+
+    public void PlayerProfileSelected() {
+        
+    }
+
+    public void VIPSelected() {
+        
+    }
+
+    public void BoostsSelected() {
+        
+    }
+
+    public void WoodSelected() {
+        
+    }
+
+    public void StoneSelected() {
+        
+    }
+
+    public void GemsSelected() {
+        
+    }
+
+    public void GemsBuySelected() {
+        
+    }
+
+    public void DealsSelected() {
+        
+    }
+
+    public void EventTasksSelected() {
+        
+    }
+
+    public void InboxSelected() {
+        
+    }
+
+    public void TabSelected() {
+        ToggleTabSelected();
+        TabGUIToggle();
+    }
+
+    public void CommanderSelected() {
+        
+    }
+
+    public void AllianceSelected() {
+        
+    }
+
+    public void InventorySelected() {
+        
+    }
+
+    public void ChatSelected() {
+        
+    }
+
+    public void TileEntitySearchSelected() {
+        
     }
 
     //##### End of Button Clicked Events #####

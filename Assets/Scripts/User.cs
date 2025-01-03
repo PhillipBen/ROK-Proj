@@ -1,11 +1,19 @@
 using UnityEngine;
 
-public class User : MonoBehaviour
+public class User
 {
     //##### Beg of Variables #####
     private int userID;
     private string userInGameName;
     //##### End of Variables #####
+
+
+    //##### Beg of Main Functions #####
+    public User(int userID, string userInGameName) {
+        this.userID = userID;
+        this.userInGameName = userInGameName;
+    }
+    //##### End of Main Functions #####
     
 
     //##### Beg of Getters/Setters #####
