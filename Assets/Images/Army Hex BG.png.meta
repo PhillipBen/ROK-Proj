@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Army Hex BG_0: -2711480857501807255
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Mag Glass_0: -566956079395615385
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
