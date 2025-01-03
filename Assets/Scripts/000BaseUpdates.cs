@@ -40,6 +40,9 @@ public class NewMonoBehaviourScript : MonoBehaviour
     --Building Blank Popup GUI
     -Test data is being loaded via DataManager
 
+    1.0.5:
+    -
+
     TODO:
 
 
