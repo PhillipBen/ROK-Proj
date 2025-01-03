@@ -19,16 +19,16 @@ public class UniverseMap : MonoBehaviour
     }
 
     public void ViewingUniverseMapMode() {
-        var kingdomList = KD.GetKingdomIDList();
+        var kingdomList = KD.GetKingdomList();
         for(int i = 0; i < kingdomList.Count; i++) {
             InstantiateKingdomIcon(kingdomList[i]);
         }
     }
 
-    private void InstantiateKingdomIcon(int kingdomID) {
+    private void InstantiateKingdomIcon(Kingdom kingdom) {
         GameObject newKingdomIcon = (GameObject)Instantiate(KingdomIconPreset.transform.GetChild(0).gameObject);
         newKingdomIcon.transform.SetParent(KingdomListFolder.gameObject.transform);
-        newKingdomIcon.GetComponent<KingdomObject>().kingdomID = kingdomID;
+        newKingdomIcon.GetComponent<KingdomObject>().kingdomID = kingdom.kingdomID;
         newKingdomIcon.SetActive(true);
     }
 

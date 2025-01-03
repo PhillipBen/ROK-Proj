@@ -36,14 +36,23 @@ public class NewMonoBehaviourScript : MonoBehaviour
     1.0.4:
     -NOTE: A kingdom has many players. A player has a User (formal login details) attribute, and an InGameProperties attribute.
     -Universe GUI
-
-    TODO:
     -Player GUI
     --Building Blank Popup GUI
+    -Test data is being loaded via DataManager
+
+    1.0.5:
+    -Player EXP was added and working.
+    --NOTE: When tile is clicked, PlayerEXP will need to be gotten from the Player class from that tile.
+    -Fixed clicking bugs with UI popups that appeared from certain actions.
+    -Added Resource button input and rounding so totals are properly rounded.
+
+    TODO:
+
+
+
 
 
     Local TODO:
-    -Learn about data-class handling, and how to access them in multiple classes.
     -Build and load the local DB and get it connected and running!
 
     Bugs:

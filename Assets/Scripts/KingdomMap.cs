@@ -195,7 +195,10 @@ public class KingdomMap : MonoBehaviour
             //Debug.Log("Selected: " + Mathf.Ceil(tileClickCoords.x + cameraGridOffset.x - cameraGridCumulativeOffset.x) + " " + Mathf.Ceil(tileClickCoords.y + cameraGridOffset.y - cameraGridCumulativeOffset.y));
             selectedTile = TileArray[(int)Mathf.Ceil(tileClickCoords.x + cameraGridOffset.x - cameraGridCumulativeOffset.x), (int)Mathf.Ceil(tileClickCoords.y + cameraGridOffset.y - cameraGridCumulativeOffset.y)];
             selectedTile.GetComponent<TileProperties>().TileSelected();
-        }//Else: Out of Range!
+        } else {
+            //Out of Range
+            UIM.ToggleCitySelected(-1);
+        }
     }
 
     private bool CheckInBounds(int x, int y) {

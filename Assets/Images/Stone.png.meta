@@ -1,19 +1,10 @@
 fileFormatVersion: 2
-guid: 48c0758d6aade37429909770a7e7708d
+guid: 2acff68e4de1a994fb4b219a9d81d6d8
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -215492468608410374
-    second: VIP Icon 1_0
-  - first:
-      213: 6517636832529538252
-    second: VIP Icon 1_1
-  - first:
-      213: -1327186473285745995
-    second: VIP Icon 1_2
-  - first:
-      213: -6426545335844532609
-    second: VIP Icon 1_3
+      213: 8399011212269539787
+    second: Stone_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -122,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: VIP Icon 1_0
+      name: Stone_0
       rect:
         serializedVersion: 2
-        x: 17
-        y: 10
-        width: 180
-        height: 203
+        x: 99
+        y: 158
+        width: 833
+        height: 586
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -137,74 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: afcd2d4ddba620df0800000000000000
-      internalID: -215492468608410374
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: VIP Icon 1_1
-      rect:
-        serializedVersion: 2
-        x: 202
-        y: 77
-        width: 7
-        height: 9
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: cccdce1da2c437a50800000000000000
-      internalID: 6517636832529538252
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: VIP Icon 1_2
-      rect:
-        serializedVersion: 2
-        x: 204
-        y: 85
-        width: 9
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 5b2891d2fe2e49de0800000000000000
-      internalID: -1327186473285745995
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: VIP Icon 1_3
-      rect:
-        serializedVersion: 2
-        x: 203
-        y: 66
-        width: 10
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: f7e0b0cf01350d6a0800000000000000
-      internalID: -6426545335844532609
+      spriteID: bc159db92384f8470800000000000000
+      internalID: 8399011212269539787
       vertices: []
       indices: 
       edges: []
@@ -223,10 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      VIP Icon 1_0: -215492468608410374
-      VIP Icon 1_1: 6517636832529538252
-      VIP Icon 1_2: -1327186473285745995
-      VIP Icon 1_3: -6426545335844532609
+      Stone_0: 8399011212269539787
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
