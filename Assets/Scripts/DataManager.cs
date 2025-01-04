@@ -13,7 +13,7 @@ public class DataManager : MonoBehaviour
 
 
     //##### Beg of Main Functions #####
-    void Start() {
+    void Awake() {
         KD = GM.GetComponent<KingdomData>();
         PD = GM.GetComponent<PlayerData>();
 
