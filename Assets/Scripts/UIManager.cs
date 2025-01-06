@@ -11,6 +11,8 @@ public class UIManager : MonoBehaviour
     private PlayerMap PM;
     private InputManager IM;
     private UniverseMap UM;
+    private TimeManager TM;
+    private PlayerData PD;
 
 
     //Universe UI
@@ -42,16 +44,15 @@ public class UIManager : MonoBehaviour
     public bool buildingOptionsObjSelectedTF;
     public GameObject playerProfilePFP;
     public GameObject playerProfileLevel;
+    public GameObject timeMultiTextObj;
 
     //##### End of Variables #####
 
 
     //##### Beg of Init Functions #####
-    public void InitLoadGraphics(PlayerData playerData) {
-        Player player = playerData.GetPlayer();
-        SetWoodAmount(player.woodAmount);
-        SetStoneAmount(player.stoneAmount);
-        SetGemsAmount(player.gemsAmount);
+    public void InitLoadGraphics() {
+        UpdateResourcesGUI();
+        UpdateTimeMutliGUI(TM.timeMulti);
     }
     //##### End of Init Functions #####
 
@@ -64,6 +65,8 @@ public class UIManager : MonoBehaviour
         IM = GM.GetComponent<InputManager>();
         PM = GM.GetComponent<PlayerMap>();
         UM = GM.GetComponent<UniverseMap>();
+        TM = GM.GetComponent<TimeManager>();
+        PD = GM.GetComponent<PlayerData>();
 
         //UI Start Mode
         tileSelectedTF = false;
@@ -275,6 +278,19 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public void UpdateTimeMutliGUI(int newMulti) {
+        timeMultiTextObj.GetComponent<TMP_Text>().text = "" + newMulti + "x";
+    }
+
+    public void UpdateResourcesGUI() {
+        Player player = PD.GetPlayer();
+        var PR = player.playerResources;
+
+        SetWoodAmount(PR.woodAmount);
+        SetStoneAmount(PR.stoneAmount);
+        SetGemsAmount(PR.gemsAmount);
+    }
+
     //##### End of Main Functions #####
 
 
@@ -380,6 +396,11 @@ public class UIManager : MonoBehaviour
 
     public void TileEntitySearchSelected() {
         
+    }
+
+    public void TimeMultiUpdate(int updateType) {
+        TM.UpdateTimeMulti(updateType); //updateType = 1 or -1
+        UpdateTimeMutliGUI(TM.timeMulti);
     }
 
     //##### End of Button Clicked Events #####

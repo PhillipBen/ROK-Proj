@@ -46,6 +46,10 @@ public class NewMonoBehaviourScript : MonoBehaviour
     -Fixed clicking bugs with UI popups that appeared from certain actions.
     -Added Resource button input and rounding so totals are properly rounded.
 
+    1.0.6:
+    -Added TimeManager. Sim time updates are a min of 1 per sec.
+    -Added PlayerResourecs, which controlls local player resources.
+
     TODO:
 
 

@@ -7,7 +7,7 @@ public class NetworkDB : MonoBehaviour
     public User[] userList;
 
     void Start() {
-        StartCoroutine(GetRequest("http://192.168.0.145/ROK-Proj-DB/UserLoad.php"));
+        //StartCoroutine(GetRequest("http://192.168.0.145/ROK-Proj-DB/UserLoad.php"));
     }
 
     IEnumerator GetRequest(string uri)

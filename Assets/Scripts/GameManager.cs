@@ -4,12 +4,16 @@ public class GameManager : MonoBehaviour
 {
     public GameObject mainCamera;
     private UIManager UIM;
-    private PlayerData PD;
+    private PlayerResources PR;
 
     void Start() {
         UIM = this.GetComponent<UIManager>();
-        PD = this.GetComponent<PlayerData>();
+        PR = this.GetComponent<PlayerResources>();
 
-        UIM.InitLoadGraphics(PD);
+        UIM.InitLoadGraphics();
+    }
+
+    public void SimUpdate() {
+        PR.IncPlayerResources();
     }
 }

@@ -33,7 +33,7 @@ public class DataManager : MonoBehaviour
         PlayerEXP playerEXP = new PlayerEXP(2, 3);
         Player player = new Player(user, playerEXP);
         PD.InitLoadPlayer(player);
-        player.LoadResourecs(12345000000, 9870000000000, 3456700000000000);
+        player.playerResources.LoadResources(0, 0, 0);//12345000000, 9870000000000, 3456700000000000);
     }
 
     private void LoadKingdoms() {

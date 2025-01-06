@@ -36,6 +36,13 @@ public class PlayerMap : MonoBehaviour
     public void HideTiles() {
         playerBaseTilesFolder.SetActive(false);
     }
+
+    public List<float> GetBuildingResourceValues() {
+        //For each building in list, if it produces resources, add to list.
+        var resourceList = new List<float> {2f, 1f, 0f}; //0 = wood, 1 = stone, 2 = gems
+        //Add resources
+        return resourceList;
+    }
     //##### End of Main Functions #####
 
 
