@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class UIManager : MonoBehaviour
 {
@@ -45,6 +46,16 @@ public class UIManager : MonoBehaviour
     public GameObject playerProfilePFP;
     public GameObject playerProfileLevel;
     public GameObject timeMultiTextObj;
+    public GameObject buildingInfoGuiTab;
+    public GameObject buildingInfoGUIPreset;
+    public GameObject buildingInfoGUIDataPreset;
+    public GameObject buildingUpgradeGuiTab;
+    public GameObject buildingUpgradeGUIDataPreset;
+    public GameObject buildingUpgradeGUIPreset;
+    public GameObject buildingBuildGUIObj;
+    public GameObject buildingBuildGUIPreset;
+    public bool BuildButtonPressedTF;
+    public List<Sprite> buildingSpriteList;
 
     //##### End of Variables #####
 
@@ -194,51 +205,49 @@ public class UIManager : MonoBehaviour
         playerProfileLevel.transform.GetChild(2).transform.GetChild(0).GetComponent<TMP_Text>().text = playerEXP.GetCurrentLevel().ToString();
     }
 
-    public void ToggleTileSelected() {
-        tileSelectedTF = !tileSelectedTF;
-    }
-
-    public void ToggleCitySelected(int playerID) {
-        //TODO: playerID will later be used to generate the specific data of the player.
-        //playerID -1 will appear if no tile was selected.
-
-        if(!tileSelectedTF) {
-            ToggleTileSelected();
-        }else {
-        if(!ClickGUILocation(playerBaseSelectedObject))
-            ToggleTileSelected();
-        }
-
-        //Generate GUI
+    public void TurnOnCitySelected(int playerID) {
         if(tileSelectedTF) {
+            Debug.Log("1");
+            TurnOffCitySelected();
+        }
+        else {
             playerBaseSelectedObject.transform.GetChild(2).GetComponent<TMP_Text>().text = "User ID: " + playerID;
             playerBaseSelectedObject.SetActive(true);
-        }else {
+            tileSelectedTF = true;
+        }
+    }
+
+    public void TurnOffCitySelected() {
+        var inGUIPos = ClickGUILocation(playerBaseSelectedObject);
+        if(!inGUIPos) {
+            Debug.Log("2");
             playerBaseSelectedObject.SetActive(false);
+            tileSelectedTF = false;
         }
     }
 
-    public void ToggleBuildingOptionsObj() {
-        buildingOptionsObjSelectedTF = !buildingOptionsObjSelectedTF;
-    }
-
-    public void ToggleBuildingOptionsObjSelected(Vector2 newPos, int buildingType) {
-        //buildingType -1 will be input if no building was selected.
-
+    public void TurnOnBuildingOptionsObjSelected(Vector2 newPos, int buildingType) {
         if(!buildingOptionsObjSelectedTF) {
-            ToggleBuildingOptionsObj();
-        }else {
-        if(!ClickGUILocation(buildingOptionsObj))
-            ToggleBuildingOptionsObj();
-        }
-
-        //Generate GUI
-        if(buildingOptionsObjSelectedTF) {
-            //Load Custom Image based on selected building type.
-            buildingOptionsObj.SetActive(true);
             buildingOptionsObj.transform.position = newPos;  
-        }else {
+            buildingOptionsObj.SetActive(true);
+            buildingOptionsObjSelectedTF = true;
+
+            if(buildingType == 0 || buildingType == 1) {
+                //Hide Custom functionality, because there is none
+                buildingOptionsObj.transform.GetChild(3).gameObject.SetActive(false);
+            }else if(false) {
+                //Add custom image pertaining to specific functionality
+            }else {
+                buildingOptionsObj.transform.GetChild(3).gameObject.SetActive(true);
+            }
+        }
+    }
+
+    public void TurnOffBuildingOptionsObjSelected() {
+        var inGUIPos = ClickGUILocation(buildingOptionsObj);
+        if(!inGUIPos) {
             buildingOptionsObj.SetActive(false);
+            buildingOptionsObjSelectedTF = false;
         }
     }
 
@@ -291,6 +300,12 @@ public class UIManager : MonoBehaviour
         SetGemsAmount(PR.gemsAmount);
     }
 
+    public bool GetAnyGUIActive() {
+        if(buildingBuildGUIObj.activeSelf || buildingUpgradeGuiTab.activeSelf || buildingInfoGuiTab.activeSelf)
+            return true;
+        else
+            return false;
+    }
     //##### End of Main Functions #####
 
 
@@ -401,6 +416,218 @@ public class UIManager : MonoBehaviour
     public void TimeMultiUpdate(int updateType) {
         TM.UpdateTimeMulti(updateType); //updateType = 1 or -1
         UpdateTimeMutliGUI(TM.timeMulti);
+    }
+
+    public void BuildingInfoButtonPressed() {
+        BuildingSlot selectedBuilding = PM.selectedBuilding;
+
+        //Delete old Details and Data Instantiations
+        for(int i = 0; i < buildingInfoGuiTab.gameObject.transform.GetChild(2).transform.GetChild(0).transform.childCount; i++) {
+            Destroy(buildingInfoGuiTab.transform.GetChild(2).transform.GetChild(0).transform.GetChild(i).gameObject);
+        }
+        
+        var pickList = new List<int>() {0};
+        if(selectedBuilding.buildingType == 0 || selectedBuilding.buildingType == 1) {
+            //Lumberyard
+            pickList = new List<int>() {2, 7}; //Prod. Per Sec., Power
+        }
+
+        for(int i = 0; i < pickList.Count; i++) { //I choose which details to show.
+            //Title
+            GameObject newTile = (GameObject)Instantiate(buildingInfoGUIPreset.gameObject);
+            newTile.transform.SetParent(buildingInfoGuiTab.gameObject.transform.GetChild(2).transform.GetChild(0));
+            newTile.transform.GetChild(0).GetComponent<TMP_Text>().text = selectedBuilding.buildingDetailList[pickList[i]];
+            newTile.SetActive(true);
+
+            //Data
+            GameObject newTile2 = (GameObject)Instantiate(buildingInfoGUIDataPreset.gameObject);
+            newTile2.transform.SetParent(buildingInfoGuiTab.gameObject.transform.GetChild(2).transform.GetChild(0));
+            newTile2.transform.GetChild(0).GetComponent<TMP_Text>().text = selectedBuilding.buildingDetailsListGet(pickList[i]);
+            newTile2.SetActive(true);
+        }
+
+        buildingInfoGuiTab.SetActive(true);
+    }
+
+    public void HideInfoGUI() {
+        buildingInfoGuiTab.SetActive(false);
+    }
+
+    public void BuildingUpgradeButtonPressed() {
+        BuildingSlot selectedBuilding = PM.selectedBuilding;
+
+        if(!selectedBuilding.upgradeInProgress) {
+            //Delete old Details and Data Instantiations
+            for(int i = 0; i < buildingUpgradeGuiTab.gameObject.transform.GetChild(3).transform.GetChild(0).transform.childCount; i++) {
+                Destroy(buildingUpgradeGuiTab.transform.GetChild(3).transform.GetChild(0).transform.GetChild(i).gameObject);
+            }
+
+            var pickList = new List<int>() {0};
+            if(selectedBuilding.buildingType == 0 || selectedBuilding.buildingType == 1) {
+                //Lumberyard
+                pickList = new List<int>() {2, 7}; //Prod. Per Sec., Power
+            }
+
+            
+            for(int i = 0; i < pickList.Count; i++) { //I choose which details to show.
+                //Title
+                GameObject newTile = (GameObject)Instantiate(buildingUpgradeGUIPreset.gameObject);
+                newTile.transform.SetParent(buildingUpgradeGuiTab.gameObject.transform.GetChild(3).transform.GetChild(0));
+                newTile.transform.GetChild(0).GetComponent<TMP_Text>().text = selectedBuilding.buildingDetailList[pickList[i]];
+                newTile.SetActive(true);
+
+                //Data
+                GameObject newTile2 = (GameObject)Instantiate(buildingUpgradeGUIDataPreset.gameObject);
+                newTile2.transform.SetParent(buildingUpgradeGuiTab.gameObject.transform.GetChild(3).transform.GetChild(0));
+                var res = selectedBuilding.buildingDetailsListGet(pickList[i]);
+                newTile2.transform.GetChild(0).GetComponent<TMP_Text>().text = res + " + ";
+                var bonus = System.Math.Round(float.Parse(selectedBuilding.buildingDetailsListGet(pickList[i])) - float.Parse(res), 2).ToString();
+                newTile2.transform.GetChild(1).GetComponent<TMP_Text>().text = bonus;
+                newTile2.transform.GetChild(0).transform.position -= new Vector3(20f * bonus.Length, 0f, 0f);
+                newTile2.SetActive(true);
+            }
+
+            //Level
+            buildingUpgradeGuiTab.transform.GetChild(2).transform.GetChild(0).GetComponent<TMP_Text>().text = "Level " + selectedBuilding.level.ToString();
+            buildingUpgradeGuiTab.transform.GetChild(2).transform.GetChild(2).GetComponent<TMP_Text>().text = (selectedBuilding.level + 1).ToString();
+
+            //Cost
+            var basePath = buildingUpgradeGuiTab.gameObject.transform.GetChild(4);
+
+            //Wood
+            basePath.transform.GetChild(0).transform.GetChild(1).GetComponent<TMP_Text>().text = selectedBuilding.GetResourceCost(0).ToString();
+            if(selectedBuilding.ResourceCostCheck(0))
+                basePath.transform.GetChild(0).transform.GetChild(1).GetComponent<TMP_Text>().color = Color.white;
+            else {
+                basePath.transform.GetChild(0).transform.GetChild(1).GetComponent<TMP_Text>().color = Color.red;
+            }
+
+            //Stone
+            basePath.transform.GetChild(1).transform.GetChild(1).GetComponent<TMP_Text>().text = selectedBuilding.GetResourceCost(1).ToString();
+            if(selectedBuilding.ResourceCostCheck(1))
+                basePath.transform.GetChild(1).transform.GetChild(1).GetComponent<TMP_Text>().color = Color.white;
+            else {
+                basePath.transform.GetChild(1).transform.GetChild(1).GetComponent<TMP_Text>().color = Color.red;
+            }
+
+            //Time
+            buildingUpgradeGuiTab.gameObject.transform.GetChild(6).transform.GetChild(0).transform.GetChild(0).GetComponent<TMP_Text>().text = selectedBuilding.GetResourceCost(2).ToString();
+            if(selectedBuilding.ResourceCostCheck(5))
+                buildingUpgradeGuiTab.gameObject.transform.GetChild(6).transform.GetChild(0).transform.GetChild(0).GetComponent<TMP_Text>().color = Color.white;
+            else {
+                buildingUpgradeGuiTab.gameObject.transform.GetChild(6).transform.GetChild(0).transform.GetChild(0).GetComponent<TMP_Text>().color = Color.red;
+            }
+
+            //Gems
+            buildingUpgradeGuiTab.gameObject.transform.GetChild(5).transform.GetChild(0).transform.GetChild(0).GetComponent<TMP_Text>().text = selectedBuilding.convertTimeToGems(selectedBuilding.GetResourceCost(2)).ToString();
+            if(selectedBuilding.ResourceCostCheck(5))
+                buildingUpgradeGuiTab.gameObject.transform.GetChild(5).transform.GetChild(0).transform.GetChild(0).GetComponent<TMP_Text>().color = Color.white;
+            else {
+                buildingUpgradeGuiTab.gameObject.transform.GetChild(5).transform.GetChild(0).transform.GetChild(0).GetComponent<TMP_Text>().color = new Color(0.5f, 0f, 0f);
+            }
+
+            buildingUpgradeGuiTab.SetActive(true);
+        }
+    }
+
+    public void UpgradeBuildingButtonPressed(bool gemsSpentTF) {
+        BuildingSlot selectedBuilding = PM.selectedBuilding;
+        var transactionSuceeded = selectedBuilding.UpgradeBuilding(gemsSpentTF);
+        if(transactionSuceeded)
+            HideUpgradeGUI();
+    }
+
+    public void HideUpgradeGUI() {
+        buildingUpgradeGuiTab.SetActive(false);
+    }
+
+    public void BuildingCustomButtonPressed() {
+        BuildingSlot selectedBuilding = PM.selectedBuilding;
+        if(selectedBuilding.buildingType == 0 || selectedBuilding.buildingType == 1) {
+            //No functionality.
+        }else if(false) {
+            //Add calls to show gui for specific buildings.
+        }
+    }
+
+    public void BuildingBuildButtonPressed() {
+        if(!BuildButtonPressedTF) {
+            BuildButtonPressedTF = true;
+            BuildingSlot building = new BuildingSlot(); //TEMPORARY BuildingSlot to get data. This is the actual clicked building slot.
+            building.SetPD(PD);
+
+            //Delete old Instantiations.
+            for(int i = 0; i < buildingBuildGUIObj.gameObject.transform.GetChild(1).transform.GetChild(0).transform.childCount; i++) {
+                Destroy(buildingBuildGUIObj.transform.GetChild(1).transform.GetChild(0).transform.GetChild(i).gameObject);
+            }
+
+            //Create new Item List
+            for(int i = 0; i < building.buildingNameList.Count; i++) { //I choose which details to show.
+                if(building.buildingNameList[i] != "Townhall" && building.buildingNameList[i] != "Wall") { //Can't ever build more than one of those
+                    building.buildingType = i;
+                    //Title
+                    GameObject newTile = (GameObject)Instantiate(buildingBuildGUIPreset.gameObject);
+                    newTile.transform.SetParent(buildingBuildGUIObj.gameObject.transform.GetChild(1).transform.GetChild(0));
+                    newTile.transform.localScale = new Vector3(1f, 1f, 1f);
+                    newTile.SetActive(true);
+
+                    //Image
+                    if(buildingSpriteList[i] != null)
+                        newTile.transform.GetChild(1).GetComponent<Image>().sprite = buildingSpriteList[i];
+                    else
+                        newTile.transform.GetChild(1).GetComponent<Image>().sprite = null;
+
+                    //Name
+                    newTile.transform.GetChild(2).GetComponent<TMP_Text>().text = building.buildingNameList[i];
+
+                    //Wood Cost
+                    newTile.transform.GetChild(3).transform.GetChild(2).GetComponent<TMP_Text>().text = building.GetResourceCost(0, 1).ToString(); 
+                    //Gets the wood cost, and sets the cost relative to the building slot level. But if the building is not yet built, it SHOULD be level 0 yet. If there is an error with cost amount, it def might be here.
+                    if(building.ResourceCostCheck(0, 1))
+                        newTile.transform.GetChild(3).transform.GetChild(2).GetComponent<TMP_Text>().color = Color.green;
+                    else
+                        newTile.transform.GetChild(3).transform.GetChild(2).GetComponent<TMP_Text>().color = Color.red;
+
+                    //Stone Cost
+                    newTile.transform.GetChild(3).transform.GetChild(4).GetComponent<TMP_Text>().text = building.GetResourceCost(1, 1).ToString(); 
+                    if(building.ResourceCostCheck(1, 1))
+                        newTile.transform.GetChild(3).transform.GetChild(4).GetComponent<TMP_Text>().color = Color.green;
+                    else
+                        newTile.transform.GetChild(3).transform.GetChild(4).GetComponent<TMP_Text>().color = Color.red;
+
+                    //Button - Color
+                    if(building.ResourceCostCheck(0, 1) && building.ResourceCostCheck(1, 1))
+                        newTile.transform.GetChild(4).GetComponent<Image>().color = Color.green;
+                    else
+                        newTile.transform.GetChild(4).GetComponent<Image>().color = Color.red;
+                }
+            }
+            buildingBuildGUIObj.SetActive(true);
+        }
+    }
+
+    public void BuildingBuildTabClosed() {
+        //Close
+        buildingBuildGUIObj.SetActive(false);
+        BuildButtonPressedTF = false;
+    }
+
+    public void BuildSelectedBuilding(GameObject buttonSelected) {
+        BuildingSlot selectedBuilding = PM.selectedBuilding;
+        var childNumber = buttonSelected.transform.parent.GetSiblingIndex();
+        if(childNumber > 1) {//Based on buildings removed from BuildingBuildButtonPressed()
+            childNumber += 1;
+        }
+        if(childNumber > 7) {
+            childNumber += 1;
+        }
+        if(selectedBuilding.ResourceCostCheck(0, 1, childNumber) && selectedBuilding.ResourceCostCheck(1, 1, childNumber)) {
+            //Recheck able to purchase, incase your resources changed since you opened the tab.
+            selectedBuilding.buildingType = childNumber;
+            selectedBuilding.BuildBuilding();
+
+            BuildingBuildTabClosed();
+        }
     }
 
     //##### End of Button Clicked Events #####

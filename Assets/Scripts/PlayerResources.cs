@@ -48,5 +48,6 @@ public class PlayerResources : MonoBehaviour
         res.gemsAmount += Convert.ToInt64(addedResourcesList[2]);
 
         UIM.UpdateResourcesGUI();
+        UpdatePlayerResorcesVariables();
     }
 }

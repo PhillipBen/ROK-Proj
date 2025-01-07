@@ -10,17 +10,12 @@ public class TimeManager : MonoBehaviour
     List<int> timeMultiList = new List<int> {1, 2, 5, 10, 15, 30, 60};
     
 
-    void Start()
-    {
-
-    }
-
     void Update()
     {
         lastSimTime += Time.deltaTime;
         if(lastSimTime >= 1) {
             lastSimTime -= 1;
-            GM.SimUpdate();
+            GM.SimUpdate(1);
         }
     }
 

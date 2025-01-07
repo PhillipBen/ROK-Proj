@@ -13,6 +13,7 @@ public class CameraMovement : MonoBehaviour
     public GameManager GM;
     public MapManager MM;
     private KingdomMap KM;
+    private UIManager UIM;
     private bool cellFix = false;
     private float startMoveTime;
 
@@ -27,6 +28,8 @@ public class CameraMovement : MonoBehaviour
         GM = GM.GetComponent<GameManager>();
         MM = GM.GetComponent<MapManager>();
         KM = GM.GetComponent<KingdomMap>();
+        UIM = GM.GetComponent<UIManager>();
+
         startMoveTime = Time.time;
     }
 
@@ -38,23 +41,25 @@ public class CameraMovement : MonoBehaviour
 
     private void PanCamera()
     {
-        //Save position of mouse in world space when dragging starts (first time clicked)
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (!MouseDownTF)
-                dragOrigin = cam.ScreenToWorldPoint(Input.mousePosition);
-        }
-        if (Input.GetMouseButtonUp(0))
-            MouseDownTF = false;
-
-        //calculate distance between drag origin and world point if mouse is still held down
-        if (Input.GetMouseButton(0))
-        {
-            if (!MouseDownTF)
+        if(!UIM.GetAnyGUIActive()) {
+            //Save position of mouse in world space when dragging starts (first time clicked)
+            if (Input.GetMouseButtonDown(0))
             {
-                Vector3 distance = dragOrigin - cam.ScreenToWorldPoint(Input.mousePosition);
+                if (!MouseDownTF)
+                    dragOrigin = cam.ScreenToWorldPoint(Input.mousePosition);
+            }
+            if (Input.GetMouseButtonUp(0))
+                MouseDownTF = false;
 
-                cam.transform.position += distance;
+            //calculate distance between drag origin and world point if mouse is still held down
+            if (Input.GetMouseButton(0))
+            {
+                if (!MouseDownTF)
+                {
+                    Vector3 distance = dragOrigin - cam.ScreenToWorldPoint(Input.mousePosition);
+
+                    cam.transform.position += distance;
+                }
             }
         }
     }
@@ -72,13 +77,14 @@ public class CameraMovement : MonoBehaviour
 
     void OnGUI()
     {
-        if (Input.mouseScrollDelta.y == 1)
-        {
-            ZoomIn();
-        }
-        else if (Input.mouseScrollDelta.y == -1)
-        {
-            ZoomOut();
+        if(!UIM.GetAnyGUIActive()) {
+            if (Input.mouseScrollDelta.y == 1){
+                ZoomIn();
+            }
+            else if (Input.mouseScrollDelta.y == -1)
+            {
+                ZoomOut();
+            }
         }
     }
     //##### End of Main Functions #####

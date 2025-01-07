@@ -5,7 +5,6 @@ public class PlayerData : MonoBehaviour
     //##### Beg of Variables #####
     public GameManager GM;
     private DataManager DM;
-    private PlayerMap PM;
 
     //Player-Specific Data (Stored Here)
     private Player player;
@@ -15,7 +14,6 @@ public class PlayerData : MonoBehaviour
     //##### Beg of Main Functions #####
     void Start() {
         DM = GM.GetComponent<DataManager>();
-        PM = GM.GetComponent<PlayerMap>();
     }
     //##### End of Main Functions #####
 

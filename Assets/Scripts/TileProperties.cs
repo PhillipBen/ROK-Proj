@@ -37,7 +37,7 @@ public class TileProperties : MonoBehaviour
     }
 
     public void TileSelected() {
-        UIM.ToggleCitySelected(playerID);
+        UIM.TurnOnCitySelected(playerID);
     }
     //##### End of Main Functions #####
 

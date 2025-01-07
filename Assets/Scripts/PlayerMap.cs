@@ -9,6 +9,10 @@ public class PlayerMap : MonoBehaviour
     private UIManager UIM;
     public List<GameObject> buildingTileList = new List<GameObject>();
     public GameObject playerBaseTilesFolder;
+    public BuildingSlot selectedBuilding;
+
+    public int tempTHLevel;
+    public int numberOfBuildersAvailable;
     //##### End of Variables #####
 
 
@@ -19,13 +23,25 @@ public class PlayerMap : MonoBehaviour
     }
 
     public void TileClicked(Vector3 clickPos) {
+
         var anyTileClickedTF = false;
-        for(int i = 0; i < buildingTileList.Count; i++) {
-            if(buildingTileList[i].GetComponent<BuildingSlot>().IsTileClicked(clickPos))
-                anyTileClickedTF = true;
+        if(!UIM.buildingOptionsObjSelectedTF) {
+            for(int i = 0; i < buildingTileList.Count; i++) {
+                if(buildingTileList[i].GetComponent<BuildingSlot>().IsTileClicked(clickPos)) {
+                    anyTileClickedTF = true;
+                    selectedBuilding = buildingTileList[i].GetComponent<BuildingSlot>();
+                    break;
+                }
+            }
         }
         if(!anyTileClickedTF) {
-            UIM.ToggleBuildingOptionsObjSelected(clickPos, -1);
+            UIM.TurnOffBuildingOptionsObjSelected();
+        }
+    }
+
+    public void BuildingInProgressUpdate(int timePassed) {
+        for(int i = 0; i < buildingTileList.Count; i++) {
+           buildingTileList[i].GetComponent<BuildingSlot>().BuildingInProgress(timePassed);
         }
     }
 
@@ -39,7 +55,7 @@ public class PlayerMap : MonoBehaviour
 
     public List<float> GetBuildingResourceValues() {
         //For each building in list, if it produces resources, add to list.
-        var resourceList = new List<float> {2f, 1f, 0f}; //0 = wood, 1 = stone, 2 = gems
+        var resourceList = new List<float> {20f, 20f, 20f}; //0 = wood, 1 = stone, 2 = gems
         //Add resources
         return resourceList;
     }
