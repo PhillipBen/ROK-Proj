@@ -13,6 +13,11 @@ public class User
         this.userID = userID;
         this.userInGameName = userInGameName;
     }
+
+    public User(string userID, string userInGameName) {
+        this.userID = int.Parse(userID);
+        this.userInGameName = userInGameName;
+    }
     //##### End of Main Functions #####
     
 

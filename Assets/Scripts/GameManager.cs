@@ -4,12 +4,19 @@ public class GameManager : MonoBehaviour
 {
     public GameObject mainCamera;
     private UIManager UIM;
-    private PlayerData PD;
+    private PlayerResources PR;
+    public PlayerMap PM;
 
     void Start() {
         UIM = this.GetComponent<UIManager>();
-        PD = this.GetComponent<PlayerData>();
+        PR = this.GetComponent<PlayerResources>();
+        PM = this.GetComponent<PlayerMap>();
 
-        UIM.InitLoadGraphics(PD);
+        UIM.InitLoadGraphics();
+    }
+
+    public void SimUpdate(int timePassed) {
+        PR.IncPlayerResources();
+        PM.BuildingInProgressUpdate(timePassed);
     }
 }

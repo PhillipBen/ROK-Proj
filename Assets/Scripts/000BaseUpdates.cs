@@ -3,15 +3,6 @@ using UnityEngine;
 public class NewMonoBehaviourScript : MonoBehaviour
 {
     /*
-    Today Finish:
-    -Finish Player GUI
-    -Get Buildings clicked to have a blank popup.
-    -Get Data working (Look at classes).
-    
-
-
-
-
     Updates:
 
     1.0.0:
@@ -46,14 +37,22 @@ public class NewMonoBehaviourScript : MonoBehaviour
     -Fixed clicking bugs with UI popups that appeared from certain actions.
     -Added Resource button input and rounding so totals are properly rounded.
 
+    1.0.6:
+    -Added TimeManager. Sim time updates are a min of 1 per sec.
+    -Added PlayerResourecs, which controlls local player resources.
+
+    1.0.7:
+    -UI Button Clicking bugs fixed.
+    -Decided on a Gem Conversion number for Time --> Gems
+    -Added Builders (1 to start)
+    -Added working Building GUI and functionality.
+    --Init build and leveling up is working.
+    --Tile graphics is working
+    --All GUI tabs relating to base building GUI is working.
+    
+
     TODO:
 
-
-
-
-
-    Local TODO:
-    -Build and load the local DB and get it connected and running!
 
     Bugs:
     -When moving screen in Kingdom map mode, some tiles are offput by 1 y coordinate. It only has problems with the top and bottom y tiles, never the left or right x tiles. Why this happens, idk. Fixed with a '1 second of no movement' all tile refresh.
@@ -73,6 +72,8 @@ public class NewMonoBehaviourScript : MonoBehaviour
 
     //##### Beg of Getters/Setters #####
     //##### End of Getters/Setters #####
+
+    Rounding to specific Dec Point: System.Math.Round(21 / 2, 2)
 
     */
 }

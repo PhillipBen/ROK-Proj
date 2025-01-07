@@ -32,7 +32,6 @@ public class InputManager : MonoBehaviour
             }else if(MM.mapZoomingID == 2) {
                 PM.TileClicked(GetMouseWorldPosition());
             }
-            
         }
     }
     

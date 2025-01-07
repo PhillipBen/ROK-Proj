@@ -197,7 +197,8 @@ public class KingdomMap : MonoBehaviour
             selectedTile.GetComponent<TileProperties>().TileSelected();
         } else {
             //Out of Range
-            UIM.ToggleCitySelected(-1);
+            //UIM.ToggleCitySelected(-1);
+            UIM.TurnOffCitySelected();
         }
     }
 
