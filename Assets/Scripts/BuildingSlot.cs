@@ -8,47 +8,47 @@ public class BuildingSlot : MonoBehaviour
     private UIManager UIM;
     private PlayerData PD;
     private PlayerMap PM;
+    private ArmyManager AM;
+    private BuildingManager BM;
     public int cellSize;
     public int buildingGUIType; //0 = Regular Building, 1 = Wall, 2 = Non-buildable Building.
     public int buildingType; //0 = Lumberyard, 1 = Quarry, Townhall, Barracks, Hospital, Laboratory, Blacksmith, Wall, Watchtower, Trading Post, Resource Silo, Radar, Garrison, Alliance Center.
     public bool buildingBuiltTF;
-
-    //Generic Variables
     public int level;
-    //Buildings: Lumberyard, Quarry, Townhall, Barracks, Hospital, Laboratory, Blacksmith, Wall, Watchtower, Trading Post, Resource Silo, Radar, Garrison, Alliance Center.
-    //Array Outer #: Wood, Stone, Time, EXP, Power Multi
-    private float[,] buildingsByResourcePercent = new float[,] {
-        {0.0025f, 0.005f, 0.33f, 0.05f, 0.075f, 0.075f, 0.06f, 0.125f, 0.02f, 0.07f, 0.04f, 0.03f, 0.075f, 0.07f}, //Wood
-        {0.005f, 0.0025f, 0.33f, 0.075f, 0.05f, 0.05f, 0.085f, 0.2f, 0.05f, 0.035f, 0.01f, 0.04f, 0.1f, 0.05f}, //Stone
-        {0.01f, 0.01f, 0.3f, 0.075f, 0.075f, 0.1f, 0.025f, 0.125f, 0.05f, 0.025f, 0.025f, 0.04f, 0.1f, 0.05f}, //Time
-        {1f, 1f, 10f, 4f, 3f, 5f, 5f, 8f, 2f, 2f, 2f, 2f, 5f, 4f}, //EXP
-        {1f, 1f, 10f, 4f, 3f, 5f, 5f, 8f, 2f, 2f, 2f, 2f, 5f, 4f}, //Power
-    };
-
-    public List<string> buildingNameList = new List<string>() {"Lumberyard", "Quarry", "Townhall", "Barracks", "Hospital", "Laboratory", "Blacksmith", "Wall", "Watchtower", "Trading Post", "Resource Silo", "Radar", "Garrison", "Alliance Center"};
-    public List<string> buildingDetailList = new List<string>() {"Level", "TH Level Req", "Prod. Per Sec.", "Wood Cost", "Stone Cost", "Build Time", "Exp Gain", "Power"};
-
-    private int univPowerMulti; //60
-
     public bool upgradeInProgress;
     private long remainingTimeSeconds;
-
+    public bool slotUnlockedTF; //If false, can't build on.
     //##### End of Variables #####
 
 
     //##### Beg of Main Functions #####
+    
+    //##### Beg of Generic Functions #####
     void Start() {
         UIM = GM.GetComponent<UIManager>();
         PD = GM.GetComponent<PlayerData>();
         PM = GM.GetComponent<PlayerMap>();
+        AM = GM.GetComponent<ArmyManager>();
+        BM = GM.GetComponent<BuildingManager>();
+
+        slotUnlockedTF = false;
+        cellSize /= 100;
+    }
+    
+    public void tempInit() {
+        //Used for temp Instantiations
+        UIM = GM.GetComponent<UIManager>();
+        PD = GM.GetComponent<PlayerData>();
+        PM = GM.GetComponent<PlayerMap>();
+        AM = GM.GetComponent<ArmyManager>();
+        BM = GM.GetComponent<BuildingManager>();
 
         cellSize /= 100;
-        univPowerMulti = 60;
-
-        SetBuildingImage();
     }
 
-    private void SetBuildingImage() {
+    
+
+    public void SetBuildingImage() {
         if(buildingType != -1) {
             if(UIM.buildingSpriteList[buildingType] != null && buildingType != 7) {
                 this.transform.GetChild(1).GetComponent<SpriteRenderer>().sprite = UIM.buildingSpriteList[buildingType];
@@ -57,7 +57,11 @@ public class BuildingSlot : MonoBehaviour
                 this.transform.GetChild(1).GetComponent<SpriteRenderer>().sprite = null;
             }
         }else {
-            this.transform.GetChild(1).GetComponent<SpriteRenderer>().sprite = null;
+            if(!slotUnlockedTF) {
+                this.transform.GetChild(1).GetComponent<SpriteRenderer>().sprite = UIM.lockedSlot;
+            }else {
+                this.transform.GetChild(1).GetComponent<SpriteRenderer>().sprite = null;
+            }
         }  
     }
 
@@ -65,10 +69,19 @@ public class BuildingSlot : MonoBehaviour
         this.transform.GetChild(2).gameObject.SetActive(true);
     }
 
-
     private void TurnOffBuildingIcon() {
         this.transform.GetChild(2).gameObject.SetActive(false);
     }
+
+    private bool hasMoreLevelsAvailable() {
+        //Improve this for certain buildings
+        if(level < 25) { 
+            return true;
+        }else {
+            return false;
+        }
+    }
+
     public string buildingDetailsListGet(int ID, int level = 0) {
         if(ID == 0) {
             return level.ToString();
@@ -120,9 +133,9 @@ public class BuildingSlot : MonoBehaviour
                 Vector2 thisPos = this.transform.position;
                 Vector2 viewportPoint = Camera.main.WorldToViewportPoint(thisPos);
                 viewportPoint = new Vector2(viewportPoint.x * Screen.width, (viewportPoint.y * Screen.height) - 180);
-                UIM.TurnOnBuildingOptionsObjSelected(viewportPoint, buildingType);
-            }else {
-                //If the building is not built, the UI should be for building that building initially.
+                UIM.TurnOnBuildingOptionsObjSelected(viewportPoint, buildingType, hasMoreLevelsAvailable());
+            }else if(slotUnlockedTF){
+                //If the building is not built and the slot is unlocked for building, the UI should be for building that building initially.
                 UIM.BuildingBuildButtonPressed();
             }
             return true; //Return true or false based on if the tile was clicked.
@@ -140,59 +153,23 @@ public class BuildingSlot : MonoBehaviour
     public void BuildingInProgress(int simTimePassed) {
         remainingTimeSeconds -= simTimePassed;
         if(remainingTimeSeconds <= 0 && upgradeInProgress) {
+            //On Upgrade Finished
+
+            //Generic
             upgradeInProgress = false;
             level += 1;
             TurnOffBuildingIcon();
             PM.numberOfBuildersAvailable += 1;
-        }
-    }
-    //##### End of Main Functions #####
 
-
-    //##### Beg of Getters/Setters #####
-
-    //Generic
-    public int GetTHLevelReq(int levelInc = 0) {
-        if(buildingType == 0 || buildingType == 1) {
-            return level + levelInc - 1;
-        }else {
-            Debug.Log("Error: Building Type not accounted for.");
-            return -1;
-        }
-    }
-
-    public int GetResourceCost(int resourceType, int levelInc = 0, int impBuildingType = -1) {
-
-        var buildingTypeCheck = buildingType;
-        if(impBuildingType != -1)
-            buildingTypeCheck = impBuildingType;
-
-        if(buildingTypeCheck == 0) {
-            //Lumberyard
-            return (int)Mathf.Round(GetEstimatedResourcesCost(resourceType, levelInc) * buildingsByResourcePercent[resourceType,0]);
-        }else if(buildingTypeCheck == 1) {
-            //Quarry
-            return (int)Mathf.Round(GetEstimatedResourcesCost(resourceType, levelInc) * buildingsByResourcePercent[resourceType,1]);
-        }else {
-            Debug.Log("Error: Building Type not accounted for.");
-            return -1;
-        }
-    }
-
-    public float GetEstimatedResourcesCost(int resourceType, int levelInc = 0) {
-        //0 is wood, 1 is stone, 2 is time, 3 is exp, 4 is power, 5 is gems
-        var YL = level + levelInc;
-        if(resourceType == 0 || resourceType == 1) {
-            return (int)Mathf.Round((Mathf.Pow((YL * 10000), 0.9f) + Mathf.Pow(((YL - 1) * 100000), 0.9f) + Mathf.Pow(YL, 6)) / 100) * 100;
-        }else if(resourceType == 2) {
-            return (int)Mathf.Round((Mathf.Pow((YL * 10000), 0.85f) + Mathf.Pow(((YL - 1) * 100000), 0.6f) + Mathf.Pow(YL, 5)) / 100) * 100;
-        }else if(resourceType == 3) {
-            return Mathf.Pow(GetTHLevelReq(levelInc), 2.5f);
-        }else if(resourceType == 4) {
-            return Mathf.Pow(GetTHLevelReq(levelInc), 2.5f) * univPowerMulti;
-        }else {
-            Debug.Log("Error: Building Type not accounted for.");
-            return -1;
+            //Building Type Specific
+            if(buildingType == 0 || buildingType == 1) {
+                PM.CalculateResourceIncome(); //If a production building is built or upgraded, we need to calculate the new resource prod. output.
+            }else if (buildingType == 2) {
+                AM.SetMarchSize(GetMarchSize());
+                PM.maxNumBuildings = GetMaxNumBuildings();
+                PM.civAge = GetCivAge();
+            }
+            
         }
     }
 
@@ -237,6 +214,7 @@ public class BuildingSlot : MonoBehaviour
             remainingTimeSeconds = GetResourceCost(2, tempLevelOffset);
             StartBuildingInProgress();//Building the first level still takes time
             buildingBuiltTF = true; //Not 'finished' building, but a building is selected there now.
+            SetBuildingImage();
             return true;
         }else {
             return false;
@@ -266,13 +244,95 @@ public class BuildingSlot : MonoBehaviour
         }
         return false;
     }
+    //##### End of Generic Functions #####
 
-    //Specific
+
+    //##### Beg of Lumberyard & Quary Functions #####
     public float GetProdPerSec(int levelInc = 0) {
         if(!upgradeInProgress) 
             return Mathf.Pow((((float)level + levelInc) / 2), 1.05f);
         else
             return 0f;
+    }
+    //##### End of Lumberyard & Quary Functions #####
+
+
+    //##### Beg of Town Hall Functions #####
+    public int GetMarchSize() {
+        return BM.marchSizeList[level - 1];
+    }
+
+    public int GetMaxNumBuildings() {
+        return BM.maxNumBuildingsList[level - 1];
+    }
+
+    public string GetCivAge() {
+        if(level < 4) {
+            return "Stone";
+        }else if(level < 10) {
+            return "Bronze";
+        }else if(level < 16) {
+            return "Iron";
+        }else if(level < 21) {
+            return "Dark";
+        }else {
+            return "Feudal";
+        }
+    }
+    //##### End of Town Hall Functions #####
+
+
+    //##### Beg of NextBuilding Functions #####
+    //##### End of NextBuilding Functions #####
+    
+    //##### End of Main Functions #####
+
+
+    //##### Beg of Getters/Setters #####
+
+    //Generic
+    public int GetTHLevelReq(int levelInc = 0) {
+        if(buildingType == 0 || buildingType == 1) {
+            return level + levelInc - 1;
+        }else {
+            Debug.Log("Error: Building Type not accounted for.");
+            return -1;
+        }
+    }
+
+    public int GetResourceCost(int resourceType, int levelInc = 0, int impBuildingType = -1) {
+
+        var buildingTypeCheck = buildingType;
+        if(impBuildingType != -1)
+            buildingTypeCheck = impBuildingType;
+
+        if(buildingTypeCheck == 0) {
+            //Lumberyard
+            return (int)Mathf.Round(GetEstimatedResourcesCost(resourceType, levelInc) * BM.buildingsByResourcePercent[resourceType,0]);
+        }else if(buildingTypeCheck == 1) {
+            //Quarry
+            return (int)Mathf.Round(GetEstimatedResourcesCost(resourceType, levelInc) * BM.buildingsByResourcePercent[resourceType,1]);
+        }else {
+            Debug.Log("Error: Building Type not accounted for.");
+            return -1;
+        }
+    }
+
+    public float GetEstimatedResourcesCost(int resourceType, int levelInc = 0) {
+        //0 is wood, 1 is stone, 2 is time, 3 is exp, 4 is power, 5 is gems
+        var YL = level + levelInc;
+        if(resourceType == 0 || resourceType == 1) {
+            return (int)Mathf.Round((Mathf.Pow((YL * 10000), 0.9f) + Mathf.Pow(((YL - 1) * 100000), 0.9f) + Mathf.Pow(YL, 6)) / 100) * 100;
+        }else if(resourceType == 2) {
+            return (int)Mathf.Round((Mathf.Pow((YL * 10000), 0.85f) + Mathf.Pow(((YL - 1) * 100000), 0.6f) + Mathf.Pow(YL, 5)) / 100) * 100;
+        }else if(resourceType == 3) {
+            return Mathf.Pow(GetTHLevelReq(levelInc), 2.5f);
+        }else if(resourceType == 4) {
+            return Mathf.Pow(GetTHLevelReq(levelInc), 2.5f) * BM.univPowerMulti;
+        }else {
+            Debug.Log("Error: Building Type not accounted for.");
+            return -1;
+        }
     }
 
     public void SetPD(PlayerData PD) {

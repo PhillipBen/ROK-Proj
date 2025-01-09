@@ -21,7 +21,19 @@ public class PlayerResources : MonoBehaviour
         TM = GM.GetComponent<TimeManager>();
         UIM = GM.GetComponent<UIManager>();
 
+        SetInitResourcesAmount();
         UpdatePlayerResorcesVariables();
+    }
+
+    public void SetInitResourcesAmount() {
+        Resources res = PD.GetPlayer().playerResources;
+        res.woodAmount += Convert.ToInt64(100000);
+        res.stoneAmount += Convert.ToInt64(100000);
+        res.gemsAmount += Convert.ToInt64(100000);
+
+        woodAmount = 100000;
+        stoneAmount = 100000;
+        gemsAmount = 100000;
     }
 
     public void UpdatePlayerResorcesVariables() {

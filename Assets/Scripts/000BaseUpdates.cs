@@ -49,13 +49,30 @@ public class NewMonoBehaviourScript : MonoBehaviour
     --Init build and leveling up is working.
     --Tile graphics is working
     --All GUI tabs relating to base building GUI is working.
+
+    1.0.8:
+    -Fixed a couple simple building bugs
+    -Adds resource production amounts getting from player base.
+    --Upon build & upgrade, the prod. amounts are also updated.
+    -Reworked the BuildingSlot to be specific to the GameObject, and BuildingManager to contain all the generic details
+    -Added BuffManager, which lists buffs (make sure to start at 1.0).
+    -Added City hall and it's related variables.
     
 
-    TODO:
+    TODO (Next Version):
+    -Add 'New Mail' Function + Submit Button (Sends to your local inbox, and can view in sent).
+    -Add Delete mail so it no longer stays in your inbox.
+    -Fix wall so is clickable (start at level 1 and buildable).
+
+    ##New Version
+    -Start Barracks Training!
+
+
 
 
     Bugs:
     -When moving screen in Kingdom map mode, some tiles are offput by 1 y coordinate. It only has problems with the top and bottom y tiles, never the left or right x tiles. Why this happens, idk. Fixed with a '1 second of no movement' all tile refresh.
+    -On first build of a building, sometimes an 'out of bounds' error occurs. Can't trigger this enough to figure out the problem.
 
 
     */
