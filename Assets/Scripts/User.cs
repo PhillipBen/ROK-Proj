@@ -3,6 +3,8 @@ using UnityEngine;
 public class User
 {
     //##### Beg of Variables #####
+
+    //0-Infinity = Player User IDs, -1 = System, -2 = Alliance
     private int userID;
     private string userInGameName;
     //##### End of Variables #####
@@ -11,11 +13,6 @@ public class User
     //##### Beg of Main Functions #####
     public User(int userID, string userInGameName) {
         this.userID = userID;
-        this.userInGameName = userInGameName;
-    }
-
-    public User(string userID, string userInGameName) {
-        this.userID = int.Parse(userID);
         this.userInGameName = userInGameName;
     }
     //##### End of Main Functions #####

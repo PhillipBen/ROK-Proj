@@ -60,6 +60,6 @@ public class NetworkDB : MonoBehaviour
             var temp = stringList[i].Split(':');
             stringList[i] = temp[1];
         }
-        return new User(stringList[0], stringList[1]);
+        return new User(int.Parse(stringList[0]), stringList[1]);
     }
 }

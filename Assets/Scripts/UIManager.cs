@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
@@ -14,10 +15,14 @@ public class UIManager : MonoBehaviour
     private UniverseMap UM;
     private TimeManager TM;
     private PlayerData PD;
+    private BuildingManager BM;
+    private MailManager MailM;
+    private DataManager DM;
 
 
     //Universe UI
     public GameObject universeListObject;
+    public GameObject UniverseFolderObj;
 
     //World GUI
     public bool tileSelectedTF;
@@ -56,6 +61,11 @@ public class UIManager : MonoBehaviour
     public GameObject buildingBuildGUIPreset;
     public bool BuildButtonPressedTF;
     public List<Sprite> buildingSpriteList;
+    public Sprite lockedSlot;
+    public GameObject mailFolderObj;
+    public List<Mail> recentlyLoadedMail;
+    private int mailLastSelectedTab;
+    private int selectedMail;
 
     //##### End of Variables #####
 
@@ -78,6 +88,9 @@ public class UIManager : MonoBehaviour
         UM = GM.GetComponent<UniverseMap>();
         TM = GM.GetComponent<TimeManager>();
         PD = GM.GetComponent<PlayerData>();
+        BM = GM.GetComponent<BuildingManager>();
+        MailM = GM.GetComponent<MailManager>();
+        DM = GM.GetComponent<DataManager>();
 
         //UI Start Mode
         tileSelectedTF = false;
@@ -86,6 +99,7 @@ public class UIManager : MonoBehaviour
         buildingOptionsObj.SetActive(false);
         tabOpenTF = false;
         playerPopupGUI.SetActive(false);
+        UniverseFolderObj.SetActive(true);
         
         TabGUIToggle();
         UpdateMapGUI();
@@ -220,17 +234,23 @@ public class UIManager : MonoBehaviour
     public void TurnOffCitySelected() {
         var inGUIPos = ClickGUILocation(playerBaseSelectedObject);
         if(!inGUIPos) {
-            Debug.Log("2");
             playerBaseSelectedObject.SetActive(false);
             tileSelectedTF = false;
         }
     }
 
-    public void TurnOnBuildingOptionsObjSelected(Vector2 newPos, int buildingType) {
+    public void TurnOnBuildingOptionsObjSelected(Vector2 newPos, int buildingType, bool upgradeAvailable) {
         if(!buildingOptionsObjSelectedTF) {
             buildingOptionsObj.transform.position = newPos;  
             buildingOptionsObj.SetActive(true);
             buildingOptionsObjSelectedTF = true;
+
+            if(upgradeAvailable) {
+                //Hide level button if building is already max level
+                buildingOptionsObj.transform.GetChild(2).gameObject.SetActive(true);
+            }else {
+                buildingOptionsObj.transform.GetChild(2).gameObject.SetActive(false);
+            }
 
             if(buildingType == 0 || buildingType == 1) {
                 //Hide Custom functionality, because there is none
@@ -301,10 +321,98 @@ public class UIManager : MonoBehaviour
     }
 
     public bool GetAnyGUIActive() {
-        if(buildingBuildGUIObj.activeSelf || buildingUpgradeGuiTab.activeSelf || buildingInfoGuiTab.activeSelf)
+        if(buildingBuildGUIObj.activeSelf || buildingUpgradeGuiTab.activeSelf || buildingInfoGuiTab.activeSelf || mailFolderObj.activeSelf)
             return true;
         else
             return false;
+    }
+
+    private void GenerateSelectedMailList(int sortType) {
+        mailLastSelectedTab = sortType;
+        selectedMail = 0;
+        recentlyLoadedMail = MailM.GetMailByTab(sortType);
+        var mailList = recentlyLoadedMail;
+        var mailFolder = mailFolderObj.transform.GetChild(1).GetChild(0).gameObject;
+        var mailPreset = mailFolderObj.transform.GetChild(1).GetChild(1).gameObject;
+
+        //Delete old Details and Data Instantiations
+        for(int i = 0; i < mailFolder.transform.childCount; i++) {
+            Destroy(mailFolder.transform.GetChild(i).gameObject);
+        }
+        //Hide New Mail Section
+        mailFolderObj.transform.GetChild(3).gameObject.SetActive(false);
+        mailFolderObj.transform.GetChild(2).gameObject.SetActive(true);
+
+        for(int i = 0; i < mailList.Count; i++) {
+            var player = DM.GetPlayerFromGloablList(mailList[i].GetUserSender().getUserID());
+
+            GameObject newMessage = (GameObject)Instantiate(mailPreset);
+            newMessage.transform.SetParent(mailFolder.transform);
+            newMessage.transform.localScale = new Vector3(1f, 1f, 1f);
+            newMessage.transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<Image>().sprite = player.playerIcon;
+            newMessage.transform.GetChild(1).GetComponent<TMP_Text>().text = "[" + player.tempAllianceName + "]" + " " + mailList[i].GetUserSender().getUserInGameName();
+            newMessage.transform.GetChild(2).GetComponent<TMP_Text>().text = mailList[i].GetSubject();
+            newMessage.transform.GetChild(3).GetComponent<TMP_Text>().text = ReturnDateAgoFormatted(new DateTime(DateTime.Now.Ticks - mailList[i].GetSentDateTime().Ticks));
+            newMessage.SetActive(true);
+        }
+        if(mailList.Count > 0) 
+            GenerateSelectedMail(mailList[0]);
+    }
+
+    private string ReturnDateAgoFormatted(DateTime dt) {
+        //Sets 0 years as 1 for all dates
+        if(dt.Year - 1 > 0) { 
+            return "" + (dt.Year - 1) + " years ago.";
+        }else if(dt.Month - 1 > 0) {
+            return "" + (dt.Month - 1) + " months ago.";
+        }else if(dt.Day - 1 > 0) {
+            return "" + (dt.Day - 1) + " days ago.";
+        }else if(dt.Hour - 1 > 0) {
+            return "" + (dt.Hour - 1) + " hours ago.";
+        }else if(dt.Minute - 1 > 0) {
+            return "" + (dt.Minute - 1) + " minutes ago.";
+        }else {
+            //Happened Just Now
+            return "Sent Just Now.";
+        }
+    }
+
+    private void GenerateSelectedMail(Mail mail) {
+        var mailFolder = mailFolderObj.transform.GetChild(2);
+        var player = DM.GetPlayerFromGloablList(mail.GetUserSender().getUserID());
+
+        mailFolder.GetChild(1).GetComponent<TMP_Text>().text = "[" + player.tempAllianceName + "]" + " " + mail.GetUserSender().getUserInGameName();
+        mailFolder.GetChild(2).GetComponent<TMP_Text>().text = mail.GetSubject();
+        mailFolder.GetChild(3).GetComponent<TMP_Text>().text = mail.GetSentDateTime().ToString();
+        mailFolder.GetChild(5).GetComponent<TMP_Text>().text = mail.GetBody();
+    }
+
+    private void StartNewMail() {
+        mailFolderObj.transform.GetChild(3).gameObject.SetActive(true);
+        mailFolderObj.transform.GetChild(2).gameObject.SetActive(false);
+
+        //Clear fields of previous data.
+        mailFolderObj.transform.GetChild(3).GetChild(0).GetComponent<TMP_InputField>().text = "";
+        mailFolderObj.transform.GetChild(3).GetChild(1).GetComponent<TMP_InputField>().text = "";
+        mailFolderObj.transform.GetChild(3).GetChild(2).GetComponent<TMP_InputField>().text = "";
+    }
+
+    private void SendNewMail() {
+        var sender = PD.GetPlayer().user;
+        var player = DM.GetPlayerFromGloablList(int.Parse(mailFolderObj.transform.GetChild(3).GetChild(0).GetComponent<TMP_InputField>().text));
+        var reciever = player.user;
+        var subject = mailFolderObj.transform.GetChild(3).GetChild(1).GetComponent<TMP_InputField>().text;
+        var sentDateTime = DateTime.Now;
+        var body = mailFolderObj.transform.GetChild(3).GetChild(2).GetComponent<TMP_InputField>().text;
+        var favoriteTF = false;
+        var newMail = new Mail(sender, reciever, subject, sentDateTime, body, favoriteTF);
+        MailM.SendMail(newMail);
+
+        //Clear fields of previous data.
+        mailFolderObj.transform.GetChild(3).GetChild(0).GetComponent<TMP_InputField>().text = "";
+        mailFolderObj.transform.GetChild(3).GetChild(1).GetComponent<TMP_InputField>().text = "";
+        mailFolderObj.transform.GetChild(3).GetChild(2).GetComponent<TMP_InputField>().text = "";
+        GenerateSelectedMailList(0);
     }
     //##### End of Main Functions #####
 
@@ -385,7 +493,8 @@ public class UIManager : MonoBehaviour
     }
 
     public void InboxSelected() {
-        
+        mailFolderObj.SetActive(true);
+        GenerateSelectedMailList(0);
     }
 
     public void TabSelected() {
@@ -436,7 +545,7 @@ public class UIManager : MonoBehaviour
             //Title
             GameObject newTile = (GameObject)Instantiate(buildingInfoGUIPreset.gameObject);
             newTile.transform.SetParent(buildingInfoGuiTab.gameObject.transform.GetChild(2).transform.GetChild(0));
-            newTile.transform.GetChild(0).GetComponent<TMP_Text>().text = selectedBuilding.buildingDetailList[pickList[i]];
+            newTile.transform.GetChild(0).GetComponent<TMP_Text>().text = BM.buildingDetailList[pickList[i]];
             newTile.SetActive(true);
 
             //Data
@@ -473,7 +582,7 @@ public class UIManager : MonoBehaviour
                 //Title
                 GameObject newTile = (GameObject)Instantiate(buildingUpgradeGUIPreset.gameObject);
                 newTile.transform.SetParent(buildingUpgradeGuiTab.gameObject.transform.GetChild(3).transform.GetChild(0));
-                newTile.transform.GetChild(0).GetComponent<TMP_Text>().text = selectedBuilding.buildingDetailList[pickList[i]];
+                newTile.transform.GetChild(0).GetComponent<TMP_Text>().text = BM.buildingDetailList[pickList[i]];
                 newTile.SetActive(true);
 
                 //Data
@@ -481,7 +590,7 @@ public class UIManager : MonoBehaviour
                 newTile2.transform.SetParent(buildingUpgradeGuiTab.gameObject.transform.GetChild(3).transform.GetChild(0));
                 var res = selectedBuilding.buildingDetailsListGet(pickList[i]);
                 newTile2.transform.GetChild(0).GetComponent<TMP_Text>().text = res + " + ";
-                var bonus = System.Math.Round(float.Parse(selectedBuilding.buildingDetailsListGet(pickList[i])) - float.Parse(res), 2).ToString();
+                var bonus = System.Math.Round(float.Parse(selectedBuilding.buildingDetailsListGet(pickList[i], 1)) - float.Parse(res), 2).ToString();
                 newTile2.transform.GetChild(1).GetComponent<TMP_Text>().text = bonus;
                 newTile2.transform.GetChild(0).transform.position -= new Vector3(20f * bonus.Length, 0f, 0f);
                 newTile2.SetActive(true);
@@ -554,6 +663,8 @@ public class UIManager : MonoBehaviour
         if(!BuildButtonPressedTF) {
             BuildButtonPressedTF = true;
             BuildingSlot building = new BuildingSlot(); //TEMPORARY BuildingSlot to get data. This is the actual clicked building slot.
+            building.GM = this.GetComponent<GameManager>();
+            building.tempInit();
             building.SetPD(PD);
 
             //Delete old Instantiations.
@@ -562,8 +673,8 @@ public class UIManager : MonoBehaviour
             }
 
             //Create new Item List
-            for(int i = 0; i < building.buildingNameList.Count; i++) { //I choose which details to show.
-                if(building.buildingNameList[i] != "Townhall" && building.buildingNameList[i] != "Wall") { //Can't ever build more than one of those
+            for(int i = 0; i < BM.buildingNameList.Count; i++) { //I choose which details to show.
+                if(BM.buildingNameList[i] != "Townhall" && BM.buildingNameList[i] != "Wall") { //Can't ever build more than one of those
                     building.buildingType = i;
                     //Title
                     GameObject newTile = (GameObject)Instantiate(buildingBuildGUIPreset.gameObject);
@@ -578,7 +689,7 @@ public class UIManager : MonoBehaviour
                         newTile.transform.GetChild(1).GetComponent<Image>().sprite = null;
 
                     //Name
-                    newTile.transform.GetChild(2).GetComponent<TMP_Text>().text = building.buildingNameList[i];
+                    newTile.transform.GetChild(2).GetComponent<TMP_Text>().text = BM.buildingNameList[i];
 
                     //Wood Cost
                     newTile.transform.GetChild(3).transform.GetChild(2).GetComponent<TMP_Text>().text = building.GetResourceCost(0, 1).ToString(); 
@@ -628,6 +739,37 @@ public class UIManager : MonoBehaviour
 
             BuildingBuildTabClosed();
         }
+    }
+
+    public void mailTabButtonClicked(int type) {
+        //0 = personal, 1 = report, 2 = alliance, 3 = system, 4 = sent, 5 = favorites
+        GenerateSelectedMailList(type);
+    }
+
+    public void mailNewMailButtonClicked() {
+        StartNewMail();
+    }
+
+    public void mailTrashButtonClicked() {
+        if(recentlyLoadedMail.Count > 0) {
+            MailM.RemoveSelectedMail(recentlyLoadedMail[selectedMail]);
+            GenerateSelectedMailList(mailLastSelectedTab);
+        }
+    }
+
+    public void mailMessageButtonClicked(GameObject message) {
+        var messageIndex = message.transform.GetSiblingIndex();
+        selectedMail = messageIndex;
+        if(recentlyLoadedMail.Count > 0) 
+            GenerateSelectedMail(recentlyLoadedMail[messageIndex]);
+    }
+
+    public void mailXButtonClicked() {
+        mailFolderObj.SetActive(false);
+    }
+
+    public void mailSubmitButtonClicked() {
+        SendNewMail();
     }
 
     //##### End of Button Clicked Events #####
