@@ -14,6 +14,7 @@ public class InputManager : MonoBehaviour
     private MapManager MM;
     private KingdomMap KM;
     private PlayerMap PM;
+    private UIManager UIM;
     //##### End of Variables #####
 
 
@@ -23,10 +24,11 @@ public class InputManager : MonoBehaviour
         KM = GM.GetComponent<KingdomMap>();
         MM = GM.GetComponent<MapManager>();
         PM = GM.GetComponent<PlayerMap>();
+        UIM = GM.GetComponent<UIManager>();
     }
 
     void Update() {
-        if(Input.GetMouseButtonDown(0)) {
+        if(Input.GetMouseButtonDown(0) && !UIM.GetAnyGUIActive()) {
             if(MM.mapZoomingID == 1) {
                 KM.GridTileClicked(GetMouseWorldPosition());
             }else if(MM.mapZoomingID == 2) {

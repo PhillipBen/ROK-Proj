@@ -57,22 +57,33 @@ public class NewMonoBehaviourScript : MonoBehaviour
     -Reworked the BuildingSlot to be specific to the GameObject, and BuildingManager to contain all the generic details
     -Added BuffManager, which lists buffs (make sure to start at 1.0).
     -Added City hall and it's related variables.
+    -Added Mail & all its functionality.
+
+    1.0.9:
+    -Added Barracks.
+    -Added Unit Training.
+    -Added Units listed in Army Manager.
+
+
+
+    TODO:
+    -When dragging on map, don't select tile.
+    -Continue Map Unit functionality on map and with GUI.
+
+
+    Bug Fixes:
+    -On first build of a building, sometimes an 'out of bounds' error occurs. Happens when another building gets clicked when a GUI tab is open. Fixed by removing the ability to select new buildings when GUI is open (Input Manager).
     
 
     TODO (Next Version):
-    -Add 'New Mail' Function + Submit Button (Sends to your local inbox, and can view in sent).
-    -Add Delete mail so it no longer stays in your inbox.
-    -Fix wall so is clickable (start at level 1 and buildable).
 
-    ##New Version
-    -Start Barracks Training!
+    -When setting the direction of the unit you are moving, you can use all 3 directions to imitate the unit's direction. Make sure to spend the time getting something decent looking.
 
 
 
 
     Bugs:
     -When moving screen in Kingdom map mode, some tiles are offput by 1 y coordinate. It only has problems with the top and bottom y tiles, never the left or right x tiles. Why this happens, idk. Fixed with a '1 second of no movement' all tile refresh.
-    -On first build of a building, sometimes an 'out of bounds' error occurs. Can't trigger this enough to figure out the problem.
 
 
     */

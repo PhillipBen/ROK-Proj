@@ -18,6 +18,7 @@ public class UIManager : MonoBehaviour
     private BuildingManager BM;
     private MailManager MailM;
     private DataManager DM;
+    private ArmyManager AM;
 
 
     //Universe UI
@@ -66,6 +67,9 @@ public class UIManager : MonoBehaviour
     public List<Mail> recentlyLoadedMail;
     private int mailLastSelectedTab;
     private int selectedMail;
+    public GameObject UnitTrainingObj;
+    private int troopTypeSelected;//Inf, Art, AV, Trans.
+    private int troopTierSelected;//1-5
 
     //##### End of Variables #####
 
@@ -91,6 +95,7 @@ public class UIManager : MonoBehaviour
         BM = GM.GetComponent<BuildingManager>();
         MailM = GM.GetComponent<MailManager>();
         DM = GM.GetComponent<DataManager>();
+        AM = GM.GetComponent<ArmyManager>();
 
         //UI Start Mode
         tileSelectedTF = false;
@@ -100,6 +105,8 @@ public class UIManager : MonoBehaviour
         tabOpenTF = false;
         playerPopupGUI.SetActive(false);
         UniverseFolderObj.SetActive(true);
+        UnitTrainingObj.SetActive(false);
+        
         
         TabGUIToggle();
         UpdateMapGUI();
@@ -221,7 +228,6 @@ public class UIManager : MonoBehaviour
 
     public void TurnOnCitySelected(int playerID) {
         if(tileSelectedTF) {
-            Debug.Log("1");
             TurnOffCitySelected();
         }
         else {
@@ -321,7 +327,7 @@ public class UIManager : MonoBehaviour
     }
 
     public bool GetAnyGUIActive() {
-        if(buildingBuildGUIObj.activeSelf || buildingUpgradeGuiTab.activeSelf || buildingInfoGuiTab.activeSelf || mailFolderObj.activeSelf)
+        if(buildingBuildGUIObj.activeSelf || buildingUpgradeGuiTab.activeSelf || buildingInfoGuiTab.activeSelf || mailFolderObj.activeSelf || UnitTrainingObj.activeSelf)
             return true;
         else
             return false;
@@ -413,6 +419,80 @@ public class UIManager : MonoBehaviour
         mailFolderObj.transform.GetChild(3).GetChild(1).GetComponent<TMP_InputField>().text = "";
         mailFolderObj.transform.GetChild(3).GetChild(2).GetComponent<TMP_InputField>().text = "";
         GenerateSelectedMailList(0);
+    }
+
+    private void TrainingGUIOpen() {
+        UnitTrainingObj.SetActive(true);
+        troopTypeSelected = 1; //Infantry
+        troopTierSelected = 1; //Tier 1
+
+        var unitNumFolder = UnitTrainingObj.transform.GetChild(5).GetChild(0);
+        unitNumFolder.GetChild(1).gameObject.GetComponent<TMP_InputField>().text = "0";
+        unitNumFolder.GetChild(0).gameObject.GetComponent<Slider>().value = 0;
+
+        TrainingUpdateCosts();
+        TrainingSetStats();
+    }
+
+    private void TrainingSetStats() {
+        var infoTab = UnitTrainingObj.transform.GetChild(8);
+        var unitStats = AM.unitStats;
+
+        for(int i = 0; i < 9; i++) { //9 Stats
+            infoTab.GetChild((i * 2) + 1).gameObject.GetComponent<TMP_Text>().text = unitStats[troopTypeSelected - 1, troopTierSelected - 1, i].ToString();
+        }
+    }
+
+    private void TrainingUpdateCosts() {
+        BuildingSlot selectedBuilding = PM.selectedBuilding;
+        var PR = PD.GetPlayer().playerResources;
+        var unitNumFolder = UnitTrainingObj.transform.GetChild(5).GetChild(0);
+
+        var unitCost = AM.GetUnitsTotalCost(troopTypeSelected - 1, troopTierSelected - 1, int.Parse(unitNumFolder.GetChild(1).gameObject.GetComponent<TMP_InputField>().text));
+
+        unitNumFolder.GetChild(2).GetChild(1).gameObject.GetComponent<TMP_Text>().text = ConvertAmountToCharacters(Convert.ToInt64(unitCost.x)); //Wood Cost
+        if(PR.woodAmount >= unitCost.x) {
+            unitNumFolder.GetChild(2).GetChild(1).gameObject.GetComponent<TMP_Text>().color = Color.green;
+        }else {
+            unitNumFolder.GetChild(2).GetChild(1).gameObject.GetComponent<TMP_Text>().color = Color.red;
+        }
+
+        unitNumFolder.GetChild(3).GetChild(1).gameObject.GetComponent<TMP_Text>().text = ConvertAmountToCharacters(Convert.ToInt64(unitCost.y)); //Stone Cost
+        if(PR.stoneAmount >= unitCost.y) {
+            unitNumFolder.GetChild(3).GetChild(1).gameObject.GetComponent<TMP_Text>().color = Color.green;
+        }else {
+            unitNumFolder.GetChild(3).GetChild(1).gameObject.GetComponent<TMP_Text>().color = Color.red;
+        }
+
+        UnitTrainingObj.transform.GetChild(6).GetChild(2).gameObject.GetComponent<TMP_Text>().text = selectedBuilding.convertTimeToGems((int)unitCost.z).ToString(); //Time Cost - Gems
+        if(PR.gemsAmount >= selectedBuilding.convertTimeToGems((int)unitCost.z)) {
+            UnitTrainingObj.transform.GetChild(6).GetChild(2).gameObject.GetComponent<TMP_Text>().color = Color.green;
+        }else {
+            UnitTrainingObj.transform.GetChild(6).GetChild(2).gameObject.GetComponent<TMP_Text>().color = Color.red;
+        }
+
+        UnitTrainingObj.transform.GetChild(7).GetChild(2).gameObject.GetComponent<TMP_Text>().text = FormatTimeAsString((int)unitCost.z); //Time Cost - Reg Time
+    }
+
+    private string FormatTimeAsString(int time) {
+        //Time input in seconds
+        var secs = time % 60;
+        var mins = Mathf.Floor(time / 60) % 60;
+        var hours = Mathf.Floor(time / (60 * 60)) % 60;
+
+        var secsStr = secs.ToString();
+        var minsStr = mins.ToString();
+        var hoursStr = hours.ToString();
+        if(secsStr.Length == 1) {
+            secsStr = "0" + secsStr;
+        }
+        if(minsStr.Length == 1) {
+            minsStr = "0" + minsStr;
+        }
+        if(hoursStr.Length == 1) {
+            hoursStr = "0" + hoursStr;
+        }
+        return hoursStr + ":" + minsStr + ":" + secsStr;
     }
     //##### End of Main Functions #####
 
@@ -537,15 +617,19 @@ public class UIManager : MonoBehaviour
         
         var pickList = new List<int>() {0};
         if(selectedBuilding.buildingType == 0 || selectedBuilding.buildingType == 1) {
-            //Lumberyard
+            //Lumberyard & Quarry
             pickList = new List<int>() {2, 7}; //Prod. Per Sec., Power
+        }else if(selectedBuilding.buildingType == 3) {
+            //Barracks
+            pickList = new List<int>() {7, 8}; //Power, Max Training Size
         }
 
         for(int i = 0; i < pickList.Count; i++) { //I choose which details to show.
             //Title
             GameObject newTile = (GameObject)Instantiate(buildingInfoGUIPreset.gameObject);
             newTile.transform.SetParent(buildingInfoGuiTab.gameObject.transform.GetChild(2).transform.GetChild(0));
-            newTile.transform.GetChild(0).GetComponent<TMP_Text>().text = BM.buildingDetailList[pickList[i]];
+            //Debug.Log("P: " + BM.buildingDetailList.Count);
+            newTile.transform.GetChild(0).GetComponent<TMP_Text>().text = BM.GetBuildingDetailList(pickList[i]);
             newTile.SetActive(true);
 
             //Data
@@ -573,8 +657,11 @@ public class UIManager : MonoBehaviour
 
             var pickList = new List<int>() {0};
             if(selectedBuilding.buildingType == 0 || selectedBuilding.buildingType == 1) {
-                //Lumberyard
+                //Lumberyard & Quarry
                 pickList = new List<int>() {2, 7}; //Prod. Per Sec., Power
+            }if(selectedBuilding.buildingType == 3) {
+                //Barracks
+                pickList = new List<int>() {7, 8}; //Power, Max Training Size
             }
 
             
@@ -582,7 +669,7 @@ public class UIManager : MonoBehaviour
                 //Title
                 GameObject newTile = (GameObject)Instantiate(buildingUpgradeGUIPreset.gameObject);
                 newTile.transform.SetParent(buildingUpgradeGuiTab.gameObject.transform.GetChild(3).transform.GetChild(0));
-                newTile.transform.GetChild(0).GetComponent<TMP_Text>().text = BM.buildingDetailList[pickList[i]];
+                newTile.transform.GetChild(0).GetComponent<TMP_Text>().text = BM.GetBuildingDetailList(pickList[i]);
                 newTile.SetActive(true);
 
                 //Data
@@ -604,7 +691,7 @@ public class UIManager : MonoBehaviour
             var basePath = buildingUpgradeGuiTab.gameObject.transform.GetChild(4);
 
             //Wood
-            basePath.transform.GetChild(0).transform.GetChild(1).GetComponent<TMP_Text>().text = selectedBuilding.GetResourceCost(0).ToString();
+            basePath.transform.GetChild(0).transform.GetChild(1).GetComponent<TMP_Text>().text = selectedBuilding.GetResourceCost(0, 1).ToString();
             if(selectedBuilding.ResourceCostCheck(0))
                 basePath.transform.GetChild(0).transform.GetChild(1).GetComponent<TMP_Text>().color = Color.white;
             else {
@@ -612,7 +699,7 @@ public class UIManager : MonoBehaviour
             }
 
             //Stone
-            basePath.transform.GetChild(1).transform.GetChild(1).GetComponent<TMP_Text>().text = selectedBuilding.GetResourceCost(1).ToString();
+            basePath.transform.GetChild(1).transform.GetChild(1).GetComponent<TMP_Text>().text = selectedBuilding.GetResourceCost(1, 1).ToString();
             if(selectedBuilding.ResourceCostCheck(1))
                 basePath.transform.GetChild(1).transform.GetChild(1).GetComponent<TMP_Text>().color = Color.white;
             else {
@@ -620,7 +707,7 @@ public class UIManager : MonoBehaviour
             }
 
             //Time
-            buildingUpgradeGuiTab.gameObject.transform.GetChild(6).transform.GetChild(0).transform.GetChild(0).GetComponent<TMP_Text>().text = selectedBuilding.GetResourceCost(2).ToString();
+            buildingUpgradeGuiTab.gameObject.transform.GetChild(6).transform.GetChild(0).transform.GetChild(0).GetComponent<TMP_Text>().text = selectedBuilding.GetResourceCost(2, 1).ToString();
             if(selectedBuilding.ResourceCostCheck(5))
                 buildingUpgradeGuiTab.gameObject.transform.GetChild(6).transform.GetChild(0).transform.GetChild(0).GetComponent<TMP_Text>().color = Color.white;
             else {
@@ -628,7 +715,7 @@ public class UIManager : MonoBehaviour
             }
 
             //Gems
-            buildingUpgradeGuiTab.gameObject.transform.GetChild(5).transform.GetChild(0).transform.GetChild(0).GetComponent<TMP_Text>().text = selectedBuilding.convertTimeToGems(selectedBuilding.GetResourceCost(2)).ToString();
+            buildingUpgradeGuiTab.gameObject.transform.GetChild(5).transform.GetChild(0).transform.GetChild(0).GetComponent<TMP_Text>().text = selectedBuilding.convertTimeToGems(selectedBuilding.GetResourceCost(2, 1)).ToString();
             if(selectedBuilding.ResourceCostCheck(5))
                 buildingUpgradeGuiTab.gameObject.transform.GetChild(5).transform.GetChild(0).transform.GetChild(0).GetComponent<TMP_Text>().color = Color.white;
             else {
@@ -652,10 +739,15 @@ public class UIManager : MonoBehaviour
 
     public void BuildingCustomButtonPressed() {
         BuildingSlot selectedBuilding = PM.selectedBuilding;
-        if(selectedBuilding.buildingType == 0 || selectedBuilding.buildingType == 1) {
-            //No functionality.
-        }else if(false) {
-            //Add calls to show gui for specific buildings.
+        if(!selectedBuilding.upgradeInProgress) {
+            if(selectedBuilding.buildingType == 0 || selectedBuilding.buildingType == 1) {
+                //No functionality.
+            }else if(selectedBuilding.buildingType == 3 && !selectedBuilding.trainingInProgressTF) {
+                //Barracks
+                TrainingGUIOpen();
+            }else if(false) {
+                //Add calls to show gui for specific buildings.
+            }
         }
     }
 
@@ -772,5 +864,53 @@ public class UIManager : MonoBehaviour
         SendNewMail();
     }
 
+    public void TrainingGUIClose() {
+        UnitTrainingObj.SetActive(false);
+    }
+
+    public void TrainingNumberUpdateFromSlider(GameObject slider) {
+        BuildingSlot selectedBuilding = PM.selectedBuilding;
+        UnitTrainingObj.transform.GetChild(5).GetChild(0).GetChild(1).GetComponent<TMP_InputField>().text = Mathf.Round(selectedBuilding.GetBarracksTrainingTroopMax() * slider.GetComponent<Slider>().value).ToString();
+        TrainingUpdateCosts();
+    }
+
+    public void TrainingSelectTroopType(int type) {
+        //1 = Infantry, 2 = Artillery, 3 = Armored Vehicles, 4 = Transport
+        troopTypeSelected = type;
+        TrainingSetStats();
+        TrainingUpdateCosts();
+    }
+
+    public void TrainingSelectTroopTier(int tier) {
+        //1-5
+        troopTierSelected = tier;
+        TrainingSetStats();
+        TrainingUpdateCosts();
+    }
+
+    public void TrainingInfoButtonToggle() {
+        if(UnitTrainingObj.transform.GetChild(8).gameObject.activeSelf)
+            UnitTrainingObj.transform.GetChild(8).gameObject.SetActive(false);
+        else   
+            UnitTrainingObj.transform.GetChild(8).gameObject.SetActive(true);
+    }
+
+    public void TrainingInstantButtonClicked() {
+        BuildingSlot selectedBuilding = PM.selectedBuilding;
+        var unitNumFolder = UnitTrainingObj.transform.GetChild(5).GetChild(0);
+
+        var successTF = selectedBuilding.AbleToTrainUnits(troopTypeSelected, troopTierSelected, int.Parse(unitNumFolder.GetChild(1).gameObject.GetComponent<TMP_InputField>().text), true);
+        if(successTF)
+            UnitTrainingObj.SetActive(false);
+    }
+
+    public void TrainingTimedButtonClicked() {
+        BuildingSlot selectedBuilding = PM.selectedBuilding;
+        var unitNumFolder = UnitTrainingObj.transform.GetChild(5).GetChild(0);
+
+        var successTF = selectedBuilding.AbleToTrainUnits(troopTypeSelected, troopTierSelected, int.Parse(unitNumFolder.GetChild(1).gameObject.GetComponent<TMP_InputField>().text), false);
+        if(successTF)
+            UnitTrainingObj.SetActive(false);
+    }
     //##### End of Button Clicked Events #####
 }

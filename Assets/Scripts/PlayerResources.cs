@@ -26,14 +26,16 @@ public class PlayerResources : MonoBehaviour
     }
 
     public void SetInitResourcesAmount() {
-        Resources res = PD.GetPlayer().playerResources;
-        res.woodAmount += Convert.ToInt64(100000);
-        res.stoneAmount += Convert.ToInt64(100000);
-        res.gemsAmount += Convert.ToInt64(100000);
+        var yourStartingResources = new List<int>() {100000, 100000, 100000}; //Wood, Stone, Gems
 
-        woodAmount = 100000;
-        stoneAmount = 100000;
-        gemsAmount = 100000;
+        Resources res = PD.GetPlayer().playerResources;
+        res.woodAmount += Convert.ToInt64(yourStartingResources[0]);
+        res.stoneAmount += Convert.ToInt64(yourStartingResources[1]);
+        res.gemsAmount += Convert.ToInt64(yourStartingResources[2]);
+
+        woodAmount = yourStartingResources[0];
+        stoneAmount = yourStartingResources[1];
+        gemsAmount = yourStartingResources[2];
     }
 
     public void UpdatePlayerResorcesVariables() {

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 public class BuildingSlot : MonoBehaviour
 {
@@ -18,6 +19,11 @@ public class BuildingSlot : MonoBehaviour
     public bool upgradeInProgress;
     private long remainingTimeSeconds;
     public bool slotUnlockedTF; //If false, can't build on.
+
+    //Barracks Variables
+    public Vector3 troopsInTraining; //Type, Tier, Number
+    public Vector2 trainingTimeRemaining; //Troops - total time, time remaining
+    public bool trainingInProgressTF;
     //##### End of Variables #####
 
 
@@ -83,7 +89,7 @@ public class BuildingSlot : MonoBehaviour
     }
 
     public string buildingDetailsListGet(int ID, int level = 0) {
-        if(ID == 0) {
+        if(ID == 0) { //SEE details at BM.buildingDetailList
             return level.ToString();
         }else if (ID == 1) {
             return GetTHLevelReq(level).ToString();
@@ -99,6 +105,8 @@ public class BuildingSlot : MonoBehaviour
             return GetResourceCost(3, level).ToString();
         }else if (ID == 7) {
             return GetResourceCost(4, level).ToString();
+        }else if (ID == 8) {
+            return GetBarracksTrainingTroopMax(level).ToString();
         }
         return null;
     }
@@ -171,6 +179,18 @@ public class BuildingSlot : MonoBehaviour
             }
             
         }
+        if(buildingType == 3) {
+            trainingTimeRemaining = new Vector2(trainingTimeRemaining.x, trainingTimeRemaining.y -simTimePassed);
+            if(trainingInProgressTF)
+                UpdateTrainingBar();
+            if(trainingTimeRemaining.y <= 0 && trainingInProgressTF) {
+                //On Troop Training Finished
+                trainingInProgressTF = false;
+                AM.AddUnitsToArmy((int)troopsInTraining.x, (int)troopsInTraining.y, (int)troopsInTraining.z);
+                troopsInTraining = new Vector3(0, 0, 0);
+                ToggleTrainingBar();
+            }
+        }
     }
 
     public float convertTimeToGems(int sec) {
@@ -211,7 +231,7 @@ public class BuildingSlot : MonoBehaviour
         if(pla.woodAmount >= GetResourceCost(0, tempLevelOffset) && pla.stoneAmount >= GetResourceCost(1, tempLevelOffset) && PM.numberOfBuildersAvailable >= 1) {
             pla.woodAmount -= GetResourceCost(0, tempLevelOffset);
             pla.stoneAmount -= GetResourceCost(1, tempLevelOffset);
-            remainingTimeSeconds = GetResourceCost(2, tempLevelOffset);
+            remainingTimeSeconds = 5; // GetResourceCost(2, tempLevelOffset); //Disable for testing
             StartBuildingInProgress();//Building the first level still takes time
             buildingBuiltTF = true; //Not 'finished' building, but a building is selected there now.
             SetBuildingImage();
@@ -282,6 +302,30 @@ public class BuildingSlot : MonoBehaviour
     //##### End of Town Hall Functions #####
 
 
+    //##### Beg of Barracks Functions #####
+    public int GetBarracksTrainingTroopMax(int levelInc = 0) {
+        return (level + levelInc) * 20;
+    }
+
+    public void ToggleTrainingBar() {
+        var bar = this.gameObject.transform.GetChild(3).gameObject;
+        if(bar.activeSelf)
+            bar.SetActive(false);
+        else
+            bar.SetActive(true);
+    }
+
+    public void UpdateTrainingBar() {
+        var slider = this.gameObject.transform.GetChild(3).GetChild(1);
+        var percentRemaining = trainingTimeRemaining.y / trainingTimeRemaining.x;
+        if(!float.IsNaN(percentRemaining) && !float.IsNegativeInfinity(percentRemaining) && float.IsPositiveInfinity(percentRemaining)) {
+            slider.localScale = new Vector3(percentRemaining, 1f, 1f);
+            slider.localPosition = new Vector3(-0.5f + (percentRemaining / 2), slider.localPosition.y, slider.localPosition.z);
+        }
+    }
+    //##### End of Barracks Functions #####
+
+
     //##### Beg of NextBuilding Functions #####
     //##### End of NextBuilding Functions #####
     
@@ -294,6 +338,8 @@ public class BuildingSlot : MonoBehaviour
     public int GetTHLevelReq(int levelInc = 0) {
         if(buildingType == 0 || buildingType == 1) {
             return level + levelInc - 1;
+        }else if (buildingType == 3) {
+            return level + levelInc;
         }else {
             Debug.Log("Error: Building Type not accounted for.");
             return -1;
@@ -312,6 +358,9 @@ public class BuildingSlot : MonoBehaviour
         }else if(buildingTypeCheck == 1) {
             //Quarry
             return (int)Mathf.Round(GetEstimatedResourcesCost(resourceType, levelInc) * BM.buildingsByResourcePercent[resourceType,1]);
+        }else if(buildingTypeCheck == 3) {
+            //Barracks
+            return (int)Mathf.Round(GetEstimatedResourcesCost(resourceType, levelInc) * BM.buildingsByResourcePercent[resourceType,3]);
         }else {
             Debug.Log("Error: Building Type not accounted for.");
             return -1;
@@ -338,6 +387,33 @@ public class BuildingSlot : MonoBehaviour
     public void SetPD(PlayerData PD) {
         //Used in the case of Manually Creating BuildingSlot just for temporary use
         this.PD = PD;
+    }
+
+    public bool AbleToTrainUnits(int type, int tier, int num, bool gemsUsedTF) {
+        var pla = PD.GetPlayer().playerResources;
+        var costs = AM.GetUnitsTotalCost(type - 1, tier - 1, num);
+        if(pla.woodAmount >= costs.x && pla.stoneAmount >= costs.y && num <= GetBarracksTrainingTroopMax() && !trainingInProgressTF) {
+            if(gemsUsedTF && pla.gemsAmount >= convertTimeToGems((int)costs.z)) {
+                pla.woodAmount -= Convert.ToInt64(costs.x);
+                pla.stoneAmount -= Convert.ToInt64(costs.y);
+                pla.gemsAmount -= Convert.ToInt64(convertTimeToGems((int)costs.z));
+                AM.AddUnitsToArmy(type, tier, num);
+                return false; //Is able to buy, but this return signals a closing of the GUI, not a 'probem' if you don't have enough gems. Whales here would be spamming this, so need to leave GUI open.
+            }else if(!gemsUsedTF) {
+                pla.woodAmount -= Convert.ToInt64(costs.x);
+                pla.stoneAmount -= Convert.ToInt64(costs.y);
+                trainingTimeRemaining = new Vector2(costs.z,costs.z);
+                troopsInTraining = new Vector3(type, tier, num);
+                trainingInProgressTF = true;
+                ToggleTrainingBar();
+                UpdateTrainingBar();
+                return true; //Able to buy
+            }else {
+                //The player doesn't have enough gems for the purchase.
+                return false;
+            }
+        }
+        return false; //Not able to buy
     }
     //##### End of Getters/Setters #####
 }

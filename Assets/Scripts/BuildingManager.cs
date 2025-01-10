@@ -18,7 +18,7 @@ public class BuildingManager : MonoBehaviour
         {1f, 1f, 10f, 4f, 3f, 5f, 5f, 8f, 2f, 2f, 2f, 2f, 5f, 4f}, //Power
     };
     public List<string> buildingNameList = new List<string>() {"Lumberyard", "Quarry", "Townhall", "Barracks", "Hospital", "Laboratory", "Blacksmith", "Wall", "Watchtower", "Trading Post", "Resource Silo", "Radar", "Garrison", "Alliance Center"};
-    public List<string> buildingDetailList = new List<string>() {"Level", "TH Level Req", "Prod. Per Sec.", "Wood Cost", "Stone Cost", "Build Time", "Exp Gain", "Power"};
+    private List<string> buildingDetailList = new List<string>() {"Level", "TH Level Req", "Prod. Per Sec.", "Wood Cost", "Stone Cost", "Build Time", "Exp Gain", "Power", "Max Training Size"};
     public int univPowerMulti; //60
     public List<int> marchSizeList = new List<int>() {2000, 3000, 4000, 5000, 7000, 9000, 12000, 15000, 19000, 23000, 28000, 33000, 38000, 44000, 50000, 57000, 64000, 72000, 80000, 90000, 100000, 110000, 120000, 130000, 150000};
 
@@ -46,6 +46,10 @@ public class BuildingManager : MonoBehaviour
                 break; //Only one of these buildings.
             }
         }
+    }
+
+    public string GetBuildingDetailList(int index) {
+        return buildingDetailList[index];
     }
     //##### End of Main Functions #####
 
