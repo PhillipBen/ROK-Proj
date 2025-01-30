@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e56d4954c88166a44bd42b70bf8e0321, type: 3}
+  m_Name: BarbarianTwo
+  m_EditorClassIdentifier: 
+  type: 5
+  tier: 2
+  attack: 81
+  defense: 126
+  health: 117
+  marchSpeed: 76
+  load: 0
+  power: 1.8
+  trainingTime: 0
+  woodCost: 0
+  stoneCost: 0

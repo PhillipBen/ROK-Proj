@@ -3,6 +3,7 @@ using System;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Linq;
 
 public class UIManager : MonoBehaviour
 {
@@ -70,6 +71,14 @@ public class UIManager : MonoBehaviour
     public GameObject UnitTrainingObj;
     private int troopTypeSelected;//Inf, Art, AV, Trans.
     private int troopTierSelected;//1-5
+    public GameObject mapUnitPreset;
+    public GameObject mapUnitFolder;
+    public GameObject mapUnitDeploymentGUI;
+    public GameObject mapUnitSliderSelectorPreset;
+    public GameObject mapUnitSliderSelectorFolder;
+    public List<Sprite> tierBackgroundList;
+    public GameObject mapUnitTypeTextPreset;
+    public GameObject MapUnitActionsObj;
 
     //##### End of Variables #####
 
@@ -165,11 +174,14 @@ public class UIManager : MonoBehaviour
     public void ShowKingdomGUI() {
         PositionSearchObject.SetActive(true);
         CurrentPositionObject.SetActive(true);
+        mapUnitFolder.SetActive(true);
     }
 
     public void HideKingdomGUI() {
         PositionSearchObject.SetActive(false);
         CurrentPositionObject.SetActive(false);
+        mapUnitDeploymentGUI.SetActive(false);
+        mapUnitFolder.SetActive(false);
     }
 
     public void ShowPlayerGUI() {
@@ -231,7 +243,7 @@ public class UIManager : MonoBehaviour
             TurnOffCitySelected();
         }
         else {
-            playerBaseSelectedObject.transform.GetChild(2).GetComponent<TMP_Text>().text = "User ID: " + playerID;
+            playerBaseSelectedObject.transform.GetChild(3).GetComponent<TMP_Text>().text = "User ID: " + playerID;
             playerBaseSelectedObject.SetActive(true);
             tileSelectedTF = true;
         }
@@ -327,7 +339,7 @@ public class UIManager : MonoBehaviour
     }
 
     public bool GetAnyGUIActive() {
-        if(buildingBuildGUIObj.activeSelf || buildingUpgradeGuiTab.activeSelf || buildingInfoGuiTab.activeSelf || mailFolderObj.activeSelf || UnitTrainingObj.activeSelf)
+        if(buildingBuildGUIObj.activeSelf || buildingUpgradeGuiTab.activeSelf || buildingInfoGuiTab.activeSelf || mailFolderObj.activeSelf || UnitTrainingObj.activeSelf || mapUnitDeploymentGUI.activeSelf)
             return true;
         else
             return false;
@@ -436,10 +448,27 @@ public class UIManager : MonoBehaviour
 
     private void TrainingSetStats() {
         var infoTab = UnitTrainingObj.transform.GetChild(8);
-        var unitStats = AM.unitStats;
+        var unit = AM.FindUnit(troopTypeSelected, troopTierSelected);
 
         for(int i = 0; i < 9; i++) { //9 Stats
-            infoTab.GetChild((i * 2) + 1).gameObject.GetComponent<TMP_Text>().text = unitStats[troopTypeSelected - 1, troopTierSelected - 1, i].ToString();
+            if(i == 0)
+                infoTab.GetChild((i * 2) + 1).gameObject.GetComponent<TMP_Text>().text = unit.attack.ToString();
+            else if(i == 1)
+                infoTab.GetChild((i * 2) + 1).gameObject.GetComponent<TMP_Text>().text = unit.defense.ToString();
+            else if(i == 2)
+                infoTab.GetChild((i * 2) + 1).gameObject.GetComponent<TMP_Text>().text = unit.health.ToString();
+            else if(i == 3)
+                infoTab.GetChild((i * 2) + 1).gameObject.GetComponent<TMP_Text>().text = unit.marchSpeed.ToString();
+            else if(i == 4)
+                infoTab.GetChild((i * 2) + 1).gameObject.GetComponent<TMP_Text>().text = unit.load.ToString();
+            else if(i == 5)
+                infoTab.GetChild((i * 2) + 1).gameObject.GetComponent<TMP_Text>().text = unit.power.ToString();
+            else if(i == 6)
+                infoTab.GetChild((i * 2) + 1).gameObject.GetComponent<TMP_Text>().text = unit.trainingTime.ToString();
+            else if(i == 7)
+                infoTab.GetChild((i * 2) + 1).gameObject.GetComponent<TMP_Text>().text = unit.woodCost.ToString();
+            else if(i == 8)
+                infoTab.GetChild((i * 2) + 1).gameObject.GetComponent<TMP_Text>().text = unit.stoneCost.ToString();
         }
     }
 
@@ -448,7 +477,7 @@ public class UIManager : MonoBehaviour
         var PR = PD.GetPlayer().playerResources;
         var unitNumFolder = UnitTrainingObj.transform.GetChild(5).GetChild(0);
 
-        var unitCost = AM.GetUnitsTotalCost(troopTypeSelected - 1, troopTierSelected - 1, int.Parse(unitNumFolder.GetChild(1).gameObject.GetComponent<TMP_InputField>().text));
+        var unitCost = AM.GetUnitsTotalCost(troopTypeSelected, troopTierSelected, int.Parse(unitNumFolder.GetChild(1).gameObject.GetComponent<TMP_InputField>().text));
 
         unitNumFolder.GetChild(2).GetChild(1).gameObject.GetComponent<TMP_Text>().text = ConvertAmountToCharacters(Convert.ToInt64(unitCost.x)); //Wood Cost
         if(PR.woodAmount >= unitCost.x) {
@@ -493,6 +522,44 @@ public class UIManager : MonoBehaviour
             hoursStr = "0" + hoursStr;
         }
         return hoursStr + ":" + minsStr + ":" + secsStr;
+    }
+
+    public string numberToCommas(int num, float remainder = 0f) {
+        var retText = "";
+        var numText = num.ToString();
+        var maxLen = 0;
+        if(numText.Length > 3) {
+            maxLen = numText.Length % 3;
+            if(maxLen == 0)
+                maxLen = 3;
+        }else {
+            maxLen = numText.Length;
+        }
+        retText += numText.Substring(0, maxLen);
+        for(int i = 0; i < Mathf.Floor((numText.Length - maxLen) / 3); i++) {
+            retText += "," + numText.Substring(maxLen + (i*3),3);
+        }
+        if(remainder != 0f) 
+            retText += "." + System.Math.Round(remainder, 2);
+        return retText;
+    }
+
+    public void DeployUnitNumberUpdate(GameObject folder, int numUnits, float totalPower, int totalLoad, int max) {
+        folder.transform.GetChild(0).GetComponent<TMP_Text>().text = "Units: " + numberToCommas(numUnits) + "/" + numberToCommas(max);
+        var powerDec = 0f;
+        if(totalPower % 1 != 0)
+            powerDec = Mathf.Floor(totalPower) - totalPower;
+        folder.transform.GetChild(1).GetComponent<TMP_Text>().text = "Total Power: " + numberToCommas((int)totalPower, powerDec);
+        folder.transform.GetChild(2).GetComponent<TMP_Text>().text = "Load: " + numberToCommas(totalLoad);
+    }
+
+    public void DeployUnitSetCommanderPower(GameObject folder, int commanderPower1, int commanderPower2) {
+        folder.transform.GetChild(3).GetComponent<TMP_Text>().text = "Commander Power: " + numberToCommas(commanderPower1 + commanderPower2);
+    }
+
+    public void MapUnitSelectedOpenGUI(Vector2 newPos) {
+        MapUnitActionsObj.transform.position = newPos;
+        MapUnitActionsObj.SetActive(true);
     }
     //##### End of Main Functions #####
 
@@ -911,6 +978,111 @@ public class UIManager : MonoBehaviour
         var successTF = selectedBuilding.AbleToTrainUnits(troopTypeSelected, troopTierSelected, int.Parse(unitNumFolder.GetChild(1).gameObject.GetComponent<TMP_InputField>().text), false);
         if(successTF)
             UnitTrainingObj.SetActive(false);
+    }
+
+    public void DeployUnitsToKingdomMap() {
+        GameObject newMapUnit = (GameObject)Instantiate(mapUnitPreset);
+        newMapUnit.transform.SetParent(mapUnitFolder.transform);
+        newMapUnit.SetActive(true);
+        newMapUnit.GetComponent<MapUnit>().DeployMapUnit(mapUnitSliderSelectorFolder.GetComponent<DeployLocalCounter>().numberOfSelectedUnits);
+        AM.UnitDeployed(mapUnitSliderSelectorFolder.GetComponent<DeployLocalCounter>().numberOfSelectedUnits);
+        KM.mapUnitList.Add(newMapUnit);
+
+        mapUnitDeploymentGUI.SetActive(false);
+    }
+
+    public void OpenMapUnitDeploymentGUI() {
+        playerBaseSelectedObject.SetActive(false);
+
+        //Delete old Details and Data Instantiations
+        for(int i = 0; i < mapUnitSliderSelectorFolder.transform.childCount; i++) {
+            Destroy(mapUnitSliderSelectorFolder.transform.GetChild(i).gameObject);
+        }
+
+        for(int a = 1; a < 5; a++) {
+            //Unit Type
+            InstantiateMapUnitText(a);
+            for(int b = 1; b < 6; b++) {
+                for(int c = 0; c < AM.numberOfAvailableUnits.Count; c++) {
+                    if(AM.numberOfAvailableUnits[c].unit.type == a && AM.numberOfAvailableUnits[c].unit.type == b  && AM.numberOfAvailableUnits[c].number > 0) {
+                        InstantiateMapUnitSelectorSlider(a, b, AM.numberOfAvailableUnits[c].number);
+                    }
+                }
+            }
+        }
+
+        var maxMarchSize = PM.returnMaxMarchSize();
+        DeployUnitNumberUpdate(mapUnitDeploymentGUI.transform.GetChild(2).gameObject, 0, 0, 0, maxMarchSize);
+        DeployUnitSetCommanderPower(mapUnitDeploymentGUI.transform.GetChild(2).gameObject, 0, 0); //Temporary until commanders.
+        mapUnitDeploymentGUI.SetActive(true);
+    }
+
+    private void InstantiateMapUnitText(int type) {
+        GameObject newText = (GameObject)Instantiate(mapUnitTypeTextPreset);
+        newText.transform.SetParent(mapUnitSliderSelectorFolder.transform);
+        newText.SetActive(true);
+
+        var typeText = "Infantry";
+        if(type == 2) {
+            typeText = "Artillery";
+        }else if(type == 3) {
+            typeText = "Armored Vehicle";
+        }else if(type == 4) {
+            typeText = "Transport";
+        }
+        newText.transform.GetChild(0).GetComponent<TMP_Text>().text = typeText;
+    }
+
+    private void InstantiateMapUnitSelectorSlider(int type, int tier, int num) {
+        GameObject newSlider = (GameObject)Instantiate(mapUnitSliderSelectorPreset);
+        newSlider.transform.SetParent(mapUnitSliderSelectorFolder.transform);
+        newSlider.transform.GetChild(2).GetComponent<DeploySlider>().type = type;
+        newSlider.transform.GetChild(2).GetComponent<DeploySlider>().tier = tier;
+        newSlider.transform.GetChild(2).GetComponent<DeploySlider>().num = num;
+        newSlider.SetActive(true);
+        newSlider.transform.GetChild(2).GetComponent<Slider>().maxValue = num;
+        newSlider.transform.GetChild(1).GetChild(0).GetComponent<Image>().sprite = tierBackgroundList[tier];
+        newSlider.transform.GetChild(1).GetChild(0).GetChild(1).GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = new String('I', (tier + 1));
+    }
+
+    public void TrainingSliderUpdateLocalText(GameObject thisSliderGO) {
+        var num = thisSliderGO.GetComponent<Slider>().value;
+        thisSliderGO.transform.parent.GetChild(3).GetComponent<TMP_InputField>().text = num.ToString();
+        thisSliderGO.GetComponent<DeploySlider>().num = (int)num;
+    }
+
+    public void TrainingTextUpdateLocalSlider(GameObject thisTextGO) {
+        var text = thisTextGO.GetComponent<TMP_InputField>().text;
+        var maxMarchSize = PM.returnMaxMarchSize();
+        var slider = thisTextGO.transform.parent.GetChild(2);
+        if(text.All(char.IsDigit) && text != "") {
+            var num = int.Parse(text);
+            if(maxMarchSize >= num) {
+                slider.GetComponent<Slider>().value = int.Parse(text);
+                slider.GetComponent<DeploySlider>().UpdateNumber(int.Parse(text));
+            }else {
+                thisTextGO.GetComponent<TMP_InputField>().text = maxMarchSize.ToString();
+                slider.GetComponent<DeploySlider>().UpdateNumber(maxMarchSize);
+            }
+        }
+        else {
+            thisTextGO.GetComponent<TMP_InputField>().text = maxMarchSize.ToString();
+            slider.GetComponent<DeploySlider>().UpdateNumber(maxMarchSize);
+        }
+    }
+
+    public void DeployClearUnitsSelected() {
+        mapUnitSliderSelectorFolder.GetComponent<DeployLocalCounter>().ClearSliderNumbers();
+    }
+
+    public void DeployCloseGUI() {
+        mapUnitDeploymentGUI.SetActive(false);
+    }
+
+    public void MapUnitReachedHome() {
+        //Set to Button right now. Adjust to when travel time <= 0;
+        KM.MapUnitReturnToBase();
+        MapUnitActionsObj.SetActive(false);
     }
     //##### End of Button Clicked Events #####
 }

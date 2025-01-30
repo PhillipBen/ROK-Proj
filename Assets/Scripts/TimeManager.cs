@@ -6,6 +6,7 @@ public class TimeManager : MonoBehaviour
     public GameManager GM;
 
     public float lastSimTime; //Saves time since last sim update. Once >= 1, call simUpdate.
+    public float lastPartialSimTime; //For the 1/60 Update
     public int timeMulti; //Base is in the inspector (1.0).
     List<int> timeMultiList = new List<int> {1, 2, 5, 10, 15, 30, 60};
     
@@ -13,9 +14,14 @@ public class TimeManager : MonoBehaviour
     void Update()
     {
         lastSimTime += Time.deltaTime;
+        lastPartialSimTime += Time.deltaTime;
+        if(lastPartialSimTime >= 0.01666f) {
+            lastPartialSimTime -= 0.01666f;
+            GM.SimUpdatePartialSecond(0.01666f);
+        }
         if(lastSimTime >= 1) {
             lastSimTime -= 1;
-            GM.SimUpdate(1);
+            GM.SimUpdateOneSecond(1);
         }
     }
 

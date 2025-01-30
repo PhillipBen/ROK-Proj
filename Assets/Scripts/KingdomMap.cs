@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class KingdomMap : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class KingdomMap : MonoBehaviour
     private MapManager MM;
     //### End of Manager Variables ###
 
+    //Tile Grid
     public int width;
     public int height;
     public int maxWidth; //Kingdom Tile Grid
@@ -28,11 +30,19 @@ public class KingdomMap : MonoBehaviour
     private Vector3 cameraGridOffset = new Vector3(15.5f, 8.5f, -10);
     private Vector3 cameraGridCumulativeOffset;
     private GameObject selectedTile;
+
+    //Map Units
+    public GameObject selectedMapUnit;
+
+    public List<GameObject> mapUnitList = new List<GameObject>(); //Sorted by Latest Attack Time (LAT).
+
+
     //##### End of Variables #####
 
 
     //##### Beg of Main Functions #####
 
+    //### Beg of Grid Tile Functions ###
     void Start()
     {
         CM = GM.mainCamera.GetComponent<CameraMovement>();
@@ -208,6 +218,66 @@ public class KingdomMap : MonoBehaviour
     private bool CheckInBounds(float x, float y) {
         return x <= maxWidth && x >= minWidth && y <= maxHeight && y >= minHeight ? true : false;
     }
+    //### End of Grid Tile Functions ###
+    
+    //### Bed of Map Unit Functions ###
+    public bool SelectMapUnit(Vector3 clickPos) {
+        var width = 0.50;
+        for(int i = 0; i < mapUnitList.Count; i++) {
+            //Debug.Log("Click: " + clickPos.x + " " + clickPos.y + " : " + mapUnitList[i].transform.position.x + " " + mapUnitList[i].transform.position.y);
+            if(clickPos.x <= mapUnitList[i].transform.position.x + (width / 2) && clickPos.x >= mapUnitList[i].transform.position.x - (width / 2) && clickPos.y <= mapUnitList[i].transform.position.y + (width / 2) && clickPos.y >= mapUnitList[i].transform.position.y - (width / 2)) {
+                //Selected
+                mapUnitList[i].GetComponent<MapUnit>().MapUnitSelected();
+                selectedMapUnit = mapUnitList[i];
+                return true;
+            }
+        }
+
+        selectedMapUnit = null;
+        return false;
+    }
+
+    public void MapUnitReturnToBase() {
+        selectedMapUnit.GetComponent<MapUnit>().MapUnitReturnedToBase();
+        mapUnitList.Remove(selectedMapUnit);
+        Destroy(selectedMapUnit);
+        selectedMapUnit = null;
+    }
+
+    public void MoveAllUnits(float timePassed) {
+        for(int i = 0; i < mapUnitList.Count; i++) {
+            mapUnitList[i].GetComponent<MapUnit>().MoveUnit(timePassed);
+        }
+    }
+
+    public void AllUnitsAttack(float timePassed) {
+        // for(int i = 0; i < mapUnitList.Count; i++) {
+        //     var MU = mapUnitList[i].GetComponent<MapUnit>();
+        //     if(MU.IsInRangeOfEnemy() && MU.AbleToAttackTF(timePassed)) {
+        //         MU.AttackEnemy();
+        //     }
+        // }
+
+        //Assume already sorted - Add sort function for init added unit
+        // var i = 0;
+        // while(mapUnitList[i].lastAttack <= timePassed) {
+        //     var MU = mapUnitList[i].GetComponent<MapUnit>();
+        //     MU.AttackEnemy();
+        // }
+
+        for(int i = 0; i < mapUnitList.Count; i++) {
+            var MU = mapUnitList[i].GetComponent<MapUnit>();
+            if(MU.HasTargetAvailable() && MU.AbleToAttackTF(timePassed)) {
+                MU.AttackEnemy();
+            }
+        }
+    }
+
+    public void SelectedUnitSetDestination(Vector3 newDestination) {
+        selectedMapUnit.GetComponent<MapUnit>().SetNewDestination(new Vector2(newDestination.x, newDestination.y));
+    }
+    //### End of Map Unit Functions ###
+
     //##### End of Main Functions #####
 
 

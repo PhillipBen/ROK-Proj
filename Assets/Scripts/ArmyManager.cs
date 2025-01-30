@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class ArmyManager : MonoBehaviour
 {
@@ -6,38 +7,75 @@ public class ArmyManager : MonoBehaviour
     public GameManager GM;
 
     public int marchSize; //max number of units in a single march
-    public int[,,] numberOfAvailableUnits = new int[4,5,1] {
-        //Number of Units
-        {{0},{0},{0},{0},{0}}, //Infantry, {T1 - T5}
-        {{0},{0},{0},{0},{0}}, //Artillery, {T1 - T5}
-        {{0},{0},{0},{0},{0}}, //Armored Vehicles, {T1 - T5}
-        {{0},{0},{0},{0},{0}} //Transport, {T1 - T5}
-    };
-
-    //##### Beg of Unit Stats #####
-
-    public float[,,] unitStats = new float[4,5,9] {
-        //Attack, Defense, Health, March Speed, Load, Power, Training Time, Wood, Stone
-        {{60, 130, 125, 90, 6, 1, 15, 50, 50},{90, 140, 130, 85, 8, 2, 30, 100, 100},{130, 145, 135, 80, 10, 3, 60, 200, 200},{160, 170, 170, 75, 11, 4, 90, 400, 400},{220, 230, 220, 70, 12, 10, 120, 800, 800}}, //Infantry, {T1 - T5}
-        {{65, 120, 120, 95, 4, 1, 15, 60, 40},{100, 120, 125, 90, 6, 2, 30, 110, 90},{140, 125, 130, 85, 8, 3, 60, 180, 220},{170, 150, 165, 80, 9, 4, 90, 420, 380},{240, 220, 220, 75, 10, 10, 120, 820, 780}}, //Artillery, {T1 - T5}
-        {{63, 125, 125, 100, 7, 1, 15, 40, 60},{95, 130, 130, 95, 9, 2, 30, 90, 110},{135, 135, 130, 90, 11, 3, 60, 220, 180},{165, 160, 165, 85, 12, 4, 90, 380, 420},{230, 225, 225, 80, 13, 10, 120, 780, 820}}, //Armored Vehicles, {T1 - T5}
-        {{30, 60, 90, 125, 15, 0.5f, 10, 40, 40},{45, 75, 100, 120, 18, 1, 20, 90, 90},{75, 80, 105, 115, 21, 1.5f, 45, 180, 180},{90, 100, 120, 110, 24, 2, 75, 380, 380},{120, 130, 130, 105, 30, 4, 100, 780, 780}} //Transport, {T1 - T5}
-    };
-
+    public List<UnitComplete> numberOfAvailableUnits = new List<UnitComplete>();
+    public List<UnitComplete> numberOfSeverelyWoundedUnits = new List<UnitComplete>(); //Units that are in the hospital
+    public int totalNumberOfSeverelyWoundedUnits; //Total number of units that are hospitalized (total of 3D array)
+    public int maxNumberOfSeverelyWoundedUnits; //Max number possible. Any extra are dead.
     public Sprite armyCommanderPreset;
-
-    //##### Beg of Unit Stats #####
+    public List<Unit> scriptableUnitList;
 
     //##### End of Variables #####
 
 
     //##### Beg of Main Functions #####
-    void Start() {
 
+    void Start() {
+        var unitInfOne = FindUnit(1, 1);
+        numberOfAvailableUnits.Add(new UnitComplete(unitInfOne, 2000));
+    }
+
+    public Unit FindUnit(int type, int tier) {
+        for(int i = 0; i < scriptableUnitList.Count; i++) {
+            if(scriptableUnitList[i].SameUnit(type, tier))
+                return scriptableUnitList[i];
+        }
+        Debug.Log("Error: Unit not found");
+        return null;
     }
 
     public void AddUnitsToArmy(int type, int tier, int num) {
-        numberOfAvailableUnits[type - 1, tier - 1, 0] = numberOfAvailableUnits[type - 1, tier - 1, 0] + num;
+        //numberOfAvailableUnits[type - 1, tier - 1, 0] = numberOfAvailableUnits[type - 1, tier - 1, 0] + num;
+        for(int x = 0; x < numberOfAvailableUnits.Count; x++) {
+            if(numberOfAvailableUnits[x].SameUnit(type, tier)) {
+                numberOfAvailableUnits[x].number += num;
+                break;
+            }
+        }
+        numberOfAvailableUnits.Add(new UnitComplete(FindUnit(type, tier), num));
+    }
+
+    public void UnitDeployed(List<UnitComplete> numberOfNewUnits) {
+        for(int a = 0; a < numberOfNewUnits.Count; a++) {
+            var unitFound = false;
+            for(int b = 0; b < numberOfAvailableUnits.Count; b++) {
+                if(numberOfNewUnits[a].SameUnit(numberOfAvailableUnits[b].unit)) {
+                    numberOfAvailableUnits[b].number -= numberOfNewUnits[a].number;
+                    unitFound = true;
+                    break;
+                }
+            }
+            if(!unitFound) {
+                Debug.Log("Unit Deployed without existing in army beforehand.");
+            }
+        }
+    }
+
+    //FIX
+    public void UnitReturnedToBase(List<UnitComplete> numberOfHealthyUnits, List<UnitComplete> numberOfSlightlyWoundedUnits, List<UnitComplete> numberOfSeverelyWoundedUnits) {
+        for(int a = 0; a < numberOfAvailableUnits.Count; a++) {
+            //Return Healthy and slightly wounded
+            numberOfAvailableUnits[a].number += numberOfHealthyUnits[a].number + numberOfSlightlyWoundedUnits[a].number;
+            //Check sev wounded.
+            if(numberOfSeverelyWoundedUnits[a].number + totalNumberOfSeverelyWoundedUnits < maxNumberOfSeverelyWoundedUnits) {
+                totalNumberOfSeverelyWoundedUnits += numberOfSeverelyWoundedUnits[a].number;
+                this.numberOfSeverelyWoundedUnits[a].number += numberOfSeverelyWoundedUnits[a].number;
+            }else {
+                //Not enough space for all, only part or none
+                var spaceRemaining = maxNumberOfSeverelyWoundedUnits - totalNumberOfSeverelyWoundedUnits;
+                this.numberOfSeverelyWoundedUnits[a].number += spaceRemaining;
+                totalNumberOfSeverelyWoundedUnits = maxNumberOfSeverelyWoundedUnits;
+            }
+        }
     }
     //##### End of Main Functions #####
 
@@ -48,7 +86,8 @@ public class ArmyManager : MonoBehaviour
     }
 
     public Vector3 GetUnitsTotalCost(int type, int tier, int num) { //Returns Vector3 because we have two costs (wood, stone, time).
-        return new Vector3(unitStats[type, tier, 7] * num, unitStats[type, tier, 8] * num, unitStats[type, tier, 6] * num);
+        var unit = FindUnit(type, tier);
+        return new Vector3(unit.woodCost * num, unit.stoneCost * num, unit.trainingTime * num);
     }
     //##### End of Getters/Setters #####
 }

@@ -63,25 +63,24 @@ public class NewMonoBehaviourScript : MonoBehaviour
     -Added Barracks.
     -Added Unit Training.
     -Added Units listed in Army Manager.
-
-
-
-    TODO:
-    -When dragging on map, don't select tile.
-    -Continue Map Unit functionality on map and with GUI.
-
-
+    -Added Barbarians
+    -Added Unit movement & Proper Rotational Looks.
+    -Finally Added Unit Attacks
     Bug Fixes:
     -On first build of a building, sometimes an 'out of bounds' error occurs. Happens when another building gets clicked when a GUI tab is open. Fixed by removing the ability to select new buildings when GUI is open (Input Manager).
     
 
-    TODO (Next Version):
-
-    -When setting the direction of the unit you are moving, you can use all 3 directions to imitate the unit's direction. Make sure to spend the time getting something decent looking.
 
 
 
 
+    TODO:
+    -Add Resources to army and remove 50% on loosing a hit (victor gains 50%) + check new max cap after lost units.
+    -Add GUI for attack damage (And HP Bar)
+    -Add a Combat Aura so you know you are under attack. (Red screen)
+    -Add Combat logs (Log stats, and send mail when complete)
+    -Add Kills as Kill Points (Test on field, but eventually set to only when in city.)
+    
     Bugs:
     -When moving screen in Kingdom map mode, some tiles are offput by 1 y coordinate. It only has problems with the top and bottom y tiles, never the left or right x tiles. Why this happens, idk. Fixed with a '1 second of no movement' all tile refresh.
 

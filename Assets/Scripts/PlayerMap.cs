@@ -105,6 +105,17 @@ public class PlayerMap : MonoBehaviour
         var resourceList = new List<float> {resourceIncome.x * BFM.woodProdBonus, resourceIncome.y * BFM.stoneProdBonus, resourceIncome.z};
         return resourceList;
     }
+
+    public int returnMaxMarchSize() {
+        for(int i = 0; i < buildingTileList.Count; i++) {
+            BuildingSlot b = buildingTileList[i].GetComponent<BuildingSlot>();
+            if(b.buildingType == 2) {//Town Hall
+                return b.GetMarchSize();
+            }
+        }
+        Debug.Log("ERROR: Unable to find Town Hall.");
+        return 0;
+    }
     //##### End of Main Functions #####
 
 
