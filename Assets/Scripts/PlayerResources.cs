@@ -29,9 +29,9 @@ public class PlayerResources : MonoBehaviour
         var yourStartingResources = new List<int>() {100000, 100000, 100000}; //Wood, Stone, Gems
 
         Resources res = PD.GetPlayer().playerResources;
-        res.woodAmount += Convert.ToInt64(yourStartingResources[0]);
-        res.stoneAmount += Convert.ToInt64(yourStartingResources[1]);
-        res.gemsAmount += Convert.ToInt64(yourStartingResources[2]);
+        res.AddWood(Convert.ToInt64(yourStartingResources[0]));
+        res.AddStone(Convert.ToInt64(yourStartingResources[1]));
+        res.AddGems(Convert.ToInt64(yourStartingResources[2]));
 
         woodAmount = yourStartingResources[0];
         stoneAmount = yourStartingResources[1];
@@ -40,9 +40,9 @@ public class PlayerResources : MonoBehaviour
 
     public void UpdatePlayerResorcesVariables() {
         Resources res = PD.GetPlayer().playerResources;
-        woodAmount = res.woodAmount;
-        stoneAmount = res.stoneAmount;
-        gemsAmount = res.gemsAmount;
+        woodAmount = res.GetWood();
+        stoneAmount = res.GetStone();
+        gemsAmount = res.GetStone();
     }
 
     public void IncPlayerResources() {
@@ -57,9 +57,9 @@ public class PlayerResources : MonoBehaviour
         }
 
         //Add Resources: 0 = wood, 1 = stone, 2 = gems
-        res.woodAmount += Convert.ToInt64(addedResourcesList[0]);
-        res.stoneAmount += Convert.ToInt64(addedResourcesList[1]);
-        res.gemsAmount += Convert.ToInt64(addedResourcesList[2]);
+        res.AddWood(Convert.ToInt64(addedResourcesList[0]));
+        res.AddStone(Convert.ToInt64(addedResourcesList[1]));
+        res.AddGems(Convert.ToInt64(addedResourcesList[2]));
 
         UIM.UpdateResourcesGUI();
         UpdatePlayerResorcesVariables();

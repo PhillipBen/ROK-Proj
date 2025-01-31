@@ -89,5 +89,13 @@ public class ArmyManager : MonoBehaviour
         var unit = FindUnit(type, tier);
         return new Vector3(unit.woodCost * num, unit.stoneCost * num, unit.trainingTime * num);
     }
+
+    public int GetArmyTotalLoad(List<UnitComplete> unitList) {
+        int maxLoad = 0;
+        for(int i = 0; i < unitList.Count; i++) {
+            maxLoad += unitList[i].unit.load * unitList[i].number;
+        }
+        return maxLoad;
+    }
     //##### End of Getters/Setters #####
 }

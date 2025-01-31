@@ -202,10 +202,10 @@ public class BuildingSlot : MonoBehaviour
         var pla = PD.GetPlayer().playerResources;
         if(gemsSpentTF) {
             var gemCost = convertTimeToGems(GetResourceCost(2));
-            if(pla.woodAmount >= GetResourceCost(0) && pla.stoneAmount >= GetResourceCost(1) && pla.gemsAmount >= gemCost && PM.numberOfBuildersAvailable >= 1) {
-                pla.woodAmount -= GetResourceCost(0);
-                pla.stoneAmount -= GetResourceCost(1);
-                pla.gemsAmount -= (long)gemCost;
+            if(pla.GetWood() >= GetResourceCost(0) && pla.GetStone() >= GetResourceCost(1) && pla.GetGems() >= gemCost && PM.numberOfBuildersAvailable >= 1) {
+                pla.RemoveWood(GetResourceCost(0));
+                pla.RemoveStone(GetResourceCost(1));
+                pla.RemoveGems((long)gemCost);
                 remainingTimeSeconds = 0; //Upgrades after '0' seconds. Do this so all upgrade rewards in one section.
                 StartBuildingInProgress();
                 return true; //Transaction Suceeded.
@@ -213,9 +213,9 @@ public class BuildingSlot : MonoBehaviour
                 return false;
             }
         }else {
-            if(pla.woodAmount >= GetResourceCost(0) && pla.stoneAmount >= GetResourceCost(1) && PM.numberOfBuildersAvailable >= 1) {
-                pla.woodAmount -= GetResourceCost(0);
-                pla.stoneAmount -= GetResourceCost(1);
+            if(pla.GetWood() >= GetResourceCost(0) && pla.GetStone() >= GetResourceCost(1) && PM.numberOfBuildersAvailable >= 1) {
+                pla.RemoveWood(GetResourceCost(0));
+                pla.RemoveStone(GetResourceCost(1));
                 remainingTimeSeconds = GetResourceCost(2);
                 StartBuildingInProgress();
                 return true;
@@ -228,9 +228,9 @@ public class BuildingSlot : MonoBehaviour
     public bool BuildBuilding() { //Build at level 0
         var pla = PD.GetPlayer().playerResources;
         var tempLevelOffset = 1;
-        if(pla.woodAmount >= GetResourceCost(0, tempLevelOffset) && pla.stoneAmount >= GetResourceCost(1, tempLevelOffset) && PM.numberOfBuildersAvailable >= 1) {
-            pla.woodAmount -= GetResourceCost(0, tempLevelOffset);
-            pla.stoneAmount -= GetResourceCost(1, tempLevelOffset);
+        if(pla.GetWood() >= GetResourceCost(0, tempLevelOffset) && pla.GetStone() >= GetResourceCost(1, tempLevelOffset) && PM.numberOfBuildersAvailable >= 1) {
+            pla.RemoveWood(GetResourceCost(0, tempLevelOffset));
+            pla.RemoveStone(GetResourceCost(1, tempLevelOffset));
             remainingTimeSeconds = 5; // GetResourceCost(2, tempLevelOffset); //Disable for testing
             StartBuildingInProgress();//Building the first level still takes time
             buildingBuiltTF = true; //Not 'finished' building, but a building is selected there now.
@@ -244,19 +244,19 @@ public class BuildingSlot : MonoBehaviour
     public bool ResourceCostCheck(int resourceID, int levelInc = 0, int impBuildingType = 0) {
         var pla = PD.GetPlayer().playerResources;
         if(resourceID == 0) {
-            if(pla.woodAmount >= GetResourceCost(0, levelInc, impBuildingType)) {
+            if(pla.GetWood() >= GetResourceCost(0, levelInc, impBuildingType)) {
                 return true;
             }else {
                 return false;
             }
         }else if (resourceID == 1) {
-            if(pla.stoneAmount >= GetResourceCost(1, levelInc, impBuildingType)) {
+            if(pla.GetStone() >= GetResourceCost(1, levelInc, impBuildingType)) {
                 return true;
             }else {
                 return false;
             }
         }else if (resourceID == 5) { //Gems
-            if(pla.stoneAmount >=  convertTimeToGems(GetResourceCost(2, levelInc, impBuildingType))) {
+            if(pla.GetGems() >=  convertTimeToGems(GetResourceCost(2, levelInc, impBuildingType))) {
                 return true;
             }else {
                 return false;
@@ -392,16 +392,16 @@ public class BuildingSlot : MonoBehaviour
     public bool AbleToTrainUnits(int type, int tier, int num, bool gemsUsedTF) {
         var pla = PD.GetPlayer().playerResources;
         var costs = AM.GetUnitsTotalCost(type - 1, tier - 1, num);
-        if(pla.woodAmount >= costs.x && pla.stoneAmount >= costs.y && num <= GetBarracksTrainingTroopMax() && !trainingInProgressTF) {
-            if(gemsUsedTF && pla.gemsAmount >= convertTimeToGems((int)costs.z)) {
-                pla.woodAmount -= Convert.ToInt64(costs.x);
-                pla.stoneAmount -= Convert.ToInt64(costs.y);
-                pla.gemsAmount -= Convert.ToInt64(convertTimeToGems((int)costs.z));
+        if(pla.GetWood() >= costs.x && pla.GetStone() >= costs.y && num <= GetBarracksTrainingTroopMax() && !trainingInProgressTF) {
+            if(gemsUsedTF && pla.GetGems() >= convertTimeToGems((int)costs.z)) {
+                pla.RemoveWood(Convert.ToInt64(costs.x));
+                pla.RemoveStone(Convert.ToInt64(costs.y));
+                pla.RemoveGems(Convert.ToInt64(convertTimeToGems((int)costs.z)));
                 AM.AddUnitsToArmy(type, tier, num);
                 return false; //Is able to buy, but this return signals a closing of the GUI, not a 'probem' if you don't have enough gems. Whales here would be spamming this, so need to leave GUI open.
             }else if(!gemsUsedTF) {
-                pla.woodAmount -= Convert.ToInt64(costs.x);
-                pla.stoneAmount -= Convert.ToInt64(costs.y);
+                pla.RemoveWood(Convert.ToInt64(costs.x));
+                pla.RemoveStone(Convert.ToInt64(costs.y));
                 trainingTimeRemaining = new Vector2(costs.z,costs.z);
                 troopsInTraining = new Vector3(type, tier, num);
                 trainingInProgressTF = true;

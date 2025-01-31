@@ -333,9 +333,9 @@ public class UIManager : MonoBehaviour
         Player player = PD.GetPlayer();
         var PR = player.playerResources;
 
-        SetWoodAmount(PR.woodAmount);
-        SetStoneAmount(PR.stoneAmount);
-        SetGemsAmount(PR.gemsAmount);
+        SetWoodAmount(PR.GetWood());
+        SetStoneAmount(PR.GetStone());
+        SetGemsAmount(PR.GetGems());
     }
 
     public bool GetAnyGUIActive() {
@@ -480,21 +480,21 @@ public class UIManager : MonoBehaviour
         var unitCost = AM.GetUnitsTotalCost(troopTypeSelected, troopTierSelected, int.Parse(unitNumFolder.GetChild(1).gameObject.GetComponent<TMP_InputField>().text));
 
         unitNumFolder.GetChild(2).GetChild(1).gameObject.GetComponent<TMP_Text>().text = ConvertAmountToCharacters(Convert.ToInt64(unitCost.x)); //Wood Cost
-        if(PR.woodAmount >= unitCost.x) {
+        if(PR.GetWood() >= unitCost.x) {
             unitNumFolder.GetChild(2).GetChild(1).gameObject.GetComponent<TMP_Text>().color = Color.green;
         }else {
             unitNumFolder.GetChild(2).GetChild(1).gameObject.GetComponent<TMP_Text>().color = Color.red;
         }
 
         unitNumFolder.GetChild(3).GetChild(1).gameObject.GetComponent<TMP_Text>().text = ConvertAmountToCharacters(Convert.ToInt64(unitCost.y)); //Stone Cost
-        if(PR.stoneAmount >= unitCost.y) {
+        if(PR.GetStone() >= unitCost.y) {
             unitNumFolder.GetChild(3).GetChild(1).gameObject.GetComponent<TMP_Text>().color = Color.green;
         }else {
             unitNumFolder.GetChild(3).GetChild(1).gameObject.GetComponent<TMP_Text>().color = Color.red;
         }
 
         UnitTrainingObj.transform.GetChild(6).GetChild(2).gameObject.GetComponent<TMP_Text>().text = selectedBuilding.convertTimeToGems((int)unitCost.z).ToString(); //Time Cost - Gems
-        if(PR.gemsAmount >= selectedBuilding.convertTimeToGems((int)unitCost.z)) {
+        if(PR.GetGems() >= selectedBuilding.convertTimeToGems((int)unitCost.z)) {
             UnitTrainingObj.transform.GetChild(6).GetChild(2).gameObject.GetComponent<TMP_Text>().color = Color.green;
         }else {
             UnitTrainingObj.transform.GetChild(6).GetChild(2).gameObject.GetComponent<TMP_Text>().color = Color.red;

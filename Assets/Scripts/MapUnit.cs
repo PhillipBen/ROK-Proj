@@ -18,11 +18,23 @@ public class MapUnit : MonoBehaviour
     public GameObject objDestination; //An army target. //If friendly, attack first enemy who attacks you. If enemy, attack them once in range.
     public GameObject tempTarget; //A temporary target. Whatever was in range this frame, priority to objDestination
     public Player player; //Who owns this march.
-    public Resources ownedResources;
     public bool neutralUnitTF; //If a neutral unit, the owned units will be barbarian. This means their corresponding stats will be different.
     public float moveSpeed;
     public float attackRange = 0.5f; //In tiles
 
+    //Army Resources:
+    public Resources resources = new Resources();
+    
+    public class Combat {
+        public GameObject attacker;
+        public GameObject defender;
+
+        public Combat(GameObject attacker, GameObject defender) {
+            this.attacker = attacker;
+            this.defender = defender;
+        }
+    }
+    private List<Combat> combatantsList;
 
 
     public int tempIndex = 0;
@@ -86,6 +98,8 @@ public class MapUnit : MonoBehaviour
             smallerSide = spriteVector2.y;
         var spriteScale = 115 / smallerSide; //Ratio Calculator
         spriteObj.transform.localScale = new Vector3((float)spriteScale, (float)spriteScale, 1);
+
+        resources.LoadResources(0, 0, 0, AM.GetArmyTotalLoad(numberOfHealthyUnits));
 
         SetTeamColor();
         UpdateMovementSpeed();
@@ -278,10 +292,32 @@ public class MapUnit : MonoBehaviour
         - What if the enemy army has a faster attack speed than you?
         -- Not deal with this?
         --- YES. Don't deal with this.
+
+        In Combat:
+        - Once a unit is out of combat, any resources lost due to unit loss are not removed until the unit is no longer is in combat
+        -- This is so the attacker, ONLY if a full defeat has succeeded, can gain 50% of the resources.
+
+        To get IN combat:
+        - The first hit must connect from the attacker.
+
+        To get OUT of combat:
+        - The attacker is defeated, the attacker stops targeting that army, the defender reaches a city (theirs, ally) or allied building, or the attacker gets out of 5 unit range.
+
         */
         public void AttackEnemy() { 
             //Normal Attack Initiation
             lastAttack = Time.time;
+
+            var combatExistsTF = false;
+            for(int i = 0; i < combatantsList.Count; i++) {
+                if(combatantsList[i].defender == tempTarget) {
+                    combatExistsTF = true;
+                }
+            }
+            if(!combatExistsTF) {
+                combatantsList.Add(new Combat(this.gameObject, tempTarget));
+                tempTarget.GetComponent<MapUnit>().DefenderBeginCombat(this.gameObject);
+            }
             var target = tempTarget;
             tempTarget = null; //Assign to null for next frame
 
@@ -297,13 +333,13 @@ public class MapUnit : MonoBehaviour
             var damageCalc = CalculateAttackDamage();
             damageCalc = new Vector2(damageCalc.x, damageCalc.y * 0.75f); //Calculate Counter Attack Damage
 
-            AttackTakeDamage(avgEnemyAtt, totalDMGTook);
+            AttackTakeDamage(avgEnemyAtt, totalDMGTook, origAttackerGO);
 
-            origAttackerGO.GetComponent<MapUnit>().CounterAttackedByEnemy(damageCalc.x, damageCalc.y);
+            origAttackerGO.GetComponent<MapUnit>().CounterAttackedByEnemy(damageCalc.x, damageCalc.y, this.gameObject);
         }
 
-        public void CounterAttackedByEnemy(float avgEnemyAtt, float totalDMGTook) {
-            AttackTakeDamage(avgEnemyAtt, totalDMGTook);
+        public void CounterAttackedByEnemy(float avgEnemyAtt, float totalDMGTook, GameObject origDefenderGO) {
+            AttackTakeDamage(avgEnemyAtt, totalDMGTook, origDefenderGO);
         }
 
         private Vector2 CalculateAttackDamage() {
@@ -324,7 +360,7 @@ public class MapUnit : MonoBehaviour
             return new Vector2(avgEnemyAtt, totalDMGTook);
         }
 
-        private void AttackTakeDamage(float avgEnemyAtt, float totalDMGTook) {
+        private void AttackTakeDamage(float avgEnemyAtt, float totalDMGTook, GameObject attackerGO) {
             //var combatEnvironment = 0; //0 = field, 1 = city
 
             var totalHealthyUnits = 0;
@@ -353,6 +389,7 @@ public class MapUnit : MonoBehaviour
             }
 
             if(!unitsSurvived) {
+                attackerGO.GetComponent<MapUnit>().EnemyUnitDefeated(resources, this.gameObject); //Before this unit's resources are removed
                 DefeatUnit();
             }
         }
@@ -374,8 +411,43 @@ public class MapUnit : MonoBehaviour
         }
 
         private void DefeatUnit() {
+            resources.DefenderDefeated();
             KM.mapUnitList.Remove(this.gameObject);
+            resources.DefenderDefeated();
             //Run back to home base.
+        }
+
+        public void EnemyUnitDefeated(Resources resources, GameObject enemy) {
+            this.resources.AttackerWinResources(resources);
+            EndCombat(enemy);
+        }
+
+        public bool UnitInCombatTF() {
+            if(combatantsList.Count > 0)
+                return true;
+            else
+                return false;
+        }
+
+        public void DefenderBeginCombat(GameObject attacker) {
+            //Activated due to an enemy attack.
+            combatantsList.Add(new Combat(attacker, this.gameObject));
+        }
+
+        public void AttackerUnableToPursue(GameObject attacker) {
+            //Called when the defender stops targetting you or is out of range.
+            //NOTE: The attacker might have targetted you but not actually attacked & started combat yet, so that combat still might not exist.
+            EndCombat(attacker);
+        }
+
+        private void EndCombat(GameObject enemy) {
+            //End combat, but you might be the overall combat attacker or defender
+            for(int i = 0; i < combatantsList.Count; i++) {
+                if(combatantsList[i].attacker == enemy && combatantsList[i].defender == this.gameObject || combatantsList[i].attacker == this.gameObject && combatantsList[i].defender == enemy) {
+                    combatantsList.RemoveAt(i);
+                    resources.NewMaxResources(AM.GetArmyTotalLoad(numberOfHealthyUnits));
+                }
+            }
         }
     //##### End of Main Functions #####
 
